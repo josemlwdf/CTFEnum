@@ -18,8 +18,7 @@ Metasploit
 Required Python libraries: subprocess, multiprocessing, sys, re, etc...``
 
 ## Installation
-
-
+    curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash
 
 ## Usage
 
