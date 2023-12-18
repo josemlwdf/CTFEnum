@@ -1,13 +1,11 @@
 #!/bin/bash
-cd /opt
-sudo git clone https://github.com/josemlwdf/CTFEnum
-sudo echo 'python3 /opt/CTFEnum/CTFenum/CTFenum.py $1' > /usr/sbin/ctfenum
-sudo chmod +x /usr/sbin/ctfenum
 
 # Function to check if a command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
+
+sudo apt update
 
 # Check and install seclists
 if ! command_exists seclists; then
@@ -30,11 +28,24 @@ fi
 # Check and install Metasploit
 if ! command_exists msfconsole; then
     echo "Installing Metasploit..."
-    sudo apt install msfconsole -y
+    sudo apt install metasploit-framework -y
 fi
 
 # Check and install dig (part of dnsutils)
 if ! command_exists dig; then
     echo "Installing dnsutils (includes dig)..."
-    sudo apt install dig -y
+    sudo apt install dnsutils -y
+fi
+
+# Clone CTFEnum repository and set up ctfenum command
+if [ ! -d "/opt/CTFEnum" ]; then
+    echo "Cloning CTFEnum repository..."
+    sudo git clone https://github.com/josemlwdf/CTFEnum /opt/CTFEnum
+fi
+
+# Create ctfenum command
+if [ ! -f "/usr/sbin/ctfenum" ]; then
+    echo "Setting up ctfenum command..."
+    echo 'python3 /opt/CTFEnum/CTFenum/CTFenum.py "$1"' | sudo tee /usr/sbin/ctfenum >/dev/null
+    sudo chmod +x /usr/sbin/ctfenum
 fi
