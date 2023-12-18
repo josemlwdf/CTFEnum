@@ -24,7 +24,11 @@ Required Python libraries: subprocess, multiprocessing, sys, re, etc...``
 
 Run the tool by providing the IP address as an argument:
 
-    python CTFEnum.py <IP_ADDRESS>
+    python3 /application/path/CTFEnum.py <IP_ADDRESS>
+    
+If installed with install.sh:
+
+    ctfenum <IP_ADDRESS>
 
 Replace <IP_ADDRESS> with the target IP address you intend to scan.
 
