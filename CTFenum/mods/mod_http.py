@@ -10,7 +10,7 @@ import os
 
 
 # Globals
-extensions = ['.txt', '.bak', '.conf', '.cgi']
+extensions = ['.txt', '.bak', '.cgi']
 common_words = []
 fast_wordlist = ''
 ip = ''
@@ -48,15 +48,8 @@ def http_change_protocol():
     global proto
     if (proto == 'http'):
         proto = 'https'
-        announce_protocol_change()
         return
     proto = 'http'
-    announce_protocol_change()
-
-
-def announce_protocol_change():
-    print_banner()
-    printc(f'[!] Changing HTTP protocol to: {proto.upper()}', BLUE)
 
 
 def http_identify_dns(e):
@@ -80,11 +73,6 @@ def http_identify_dns(e):
             dns = main_domain
 
             register_subdomains(subdomains)
-
-
-def print_banner():
-    print_separator()
-    printc(f'[!] Attacking port {port}', YELLOW)     
 
 
 def create_short_wordlist():
@@ -114,10 +102,12 @@ def launch_threads(threads):
 
 def http_identify_server(response):
     global extensions
+    if not response:
+        return
 
     server_header = response.headers['Server']
     if 'Apache' in server_header:
-        print_banner()
+        print_banner(port)
         printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
         printc(f'[!] {server_header}', BLUE)
         extensions.append('.php')
@@ -129,12 +119,18 @@ def http_identify_server(response):
 
                 if output:
                     if 'uid' in output:
-                        print_banner()
+                        print_banner(port)
                         printc('[+] Possible RCE confirmed. CVE-2021-41773', RED, YELLOW)
                         printc(cmd, BLUE)
                         print(output)
             except:
                 return
+    elif 'Microsoft-IIS' in server_header:
+        print_banner(port)
+        printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
+        printc(f'[!] {server_header}', BLUE)
+        extensions.append('.asp')
+        extensions.append('.aspx')
 
 
 def http_extract_comments(response):
@@ -153,7 +149,7 @@ def http_extract_comments(response):
         if not to_show:
             return
         comments_data = '\n\n'.join(to_show)
-        print_banner()
+        print_banner(port)
         print(f'[!] Comments found in: {response.request.url}')
         printc(comments_data, GREEN)
 
@@ -161,9 +157,9 @@ def http_extract_comments(response):
 def call_gobuster(filename, url):
     global fuzz_done
     if (url in fuzz_done):
-        return None # Return None if URL has already been tested
+        return None # Return None if URL has already been tested*
 
-    cmd = f'gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-color --no-error -k'   
+    cmd = f'gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k'   
     fuzz_done.append(url)
     response = http_connect_to_server(url) 
     output = None
@@ -184,17 +180,25 @@ def http_fuzz_files(url):
     output = call_gobuster(filename, url)
 
     if output:
-        print_banner()
-        print(f'[!] gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-color --no-error -k')
+        print_banner(port)
+        print(f'[!] gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k')
         printc(f'[!] URL: {url}', GREEN)
         print(output.replace('\n\n', '\n'))
         
         # Handle Redirections
         redirections = re.findall('--> (.+)\]', output)
         if redirections:
-            for new_url in redirections:    
-                if not (ip in new_url) and (len(dns) < 1):
-                    register_subdomains([new_url.split('/')[2]])                   
+            for new_url in redirections:   
+                if '://' in new_url: 
+                    if (not ip in new_url) and (len(dns) < 1):
+                        if '/' in new_url:
+                            register_subdomains([new_url.split('/')[2]])    
+                elif (new_url[0] == '/'):
+                    host = url.split('/')[2]
+                    new_url = f'{proto}://{host}{new_url}'
+                else:
+                    host = url.split('//')[1]
+                    new_url = f'{proto}://{host}/{new_url}'
                 fuzz_list.append(new_url)
 
         # Extract comments
@@ -226,7 +230,7 @@ def register_subdomains(subdomains, cmd=None):
             new_url = f'http://{subdomain}'
             fuzz_list.append(new_url)
         
-        print_banner()
+        print_banner(port)
         if cmd:
             print(f'[!] {cmd}')
         printc('[+] Some subdomains have been found:', GREEN)
@@ -238,7 +242,7 @@ def register_subdomains(subdomains, cmd=None):
 def http_fuzz_subdomains():
     filename = fast_wordlist
 
-    cmd = f'gobuster vhost -u {dns} -q -w {filename} -t 70 -z --no-color --no-error --append-domain -k'
+    cmd = f'gobuster vhost -u {dns} -q -w {filename} -t 70 -z --no-error --append-domain -k'
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except:

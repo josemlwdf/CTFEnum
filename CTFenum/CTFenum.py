@@ -21,6 +21,8 @@ def main():
 
     ip = sys.argv[1]
 
+    clean_hosts(ip)
+
     output_dict = mod_nmap.nmap(ip)
 
     tcp_ports = output_dict.get('nmap_tcp_ports', '').split(',')
@@ -35,16 +37,18 @@ def main():
 
     procs = []
 
-    dns = ''
+    dns = scan_for_dns(nmap_detail)
+
+    if dns:
+        clean_hosts(ip, dns)
 
     # TCP
     for port in tcp_ports:
         if port == '21':
             process = multiprocessing.Process(target=mod_ftp.handle_ftp, args=(ip, port, nmap_detail))
             procs.append(process)
-        if port == '22':
-            print_separator()
-            printc('[!] Attacking port 22', YELLOW) 
+        if (port == '22') or (port == '2222'):
+            print_banner('22')
             print('[!] You can try to bruteforce credentials.')
             print("crackmapexec ssh -u usernames.txt -p passwords.txt $(IP) | grep -E '\+|\*'")
         if port == '23': 
@@ -57,10 +61,12 @@ def main():
             process = multiprocessing.Process(target=mod_finger.handle_finger, args=(ip,))
             procs.append(process)
         if (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443'):
+            procs = launch_procs(procs)
             process = multiprocessing.Process(target=mod_http.handle_http, args=(ip, port))
             procs.append(process)
+            procs = launch_procs(procs)
         if port == '88':
-            process = multiprocessing.Process(target=mod_kerberos.handle_kerberos, args=(ip,))
+            process = multiprocessing.Process(target=mod_kerberos.handle_kerberos, args=(ip, dns))
             procs.append(process)
 
 
@@ -79,4 +85,4 @@ def main():
 
 
 if __name__ == "__main__":
-    mod_http.handle_http('192.168.152.130', '443')
+    main()

@@ -71,8 +71,8 @@ def ftp_brute(ip, port):
     procs = launch_procs(procs)
 
 
-def print_banner(port):
-    printc(f'[!] Attacking port {port}', YELLOW)     
+def print_this_banner(port):
+    print_banner(port)  
     print('''[!] If the FTP server does not lists the content, use the commands like:
     ftp:>passive
     ftp:>bin
@@ -80,7 +80,6 @@ def print_banner(port):
 
 def handle_ftp(target, port, nmap_detail):
     if ('ftp-anon' in nmap_detail):
-        print_separator()
         print_banner(port)
         printc('[+] Server have anonymous login enabled', GREEN)
     else:        

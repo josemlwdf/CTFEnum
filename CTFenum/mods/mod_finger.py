@@ -51,8 +51,7 @@ def finger_user(ip, username):
 
 
 def finger_banner(username, full_name):
-    print_separator()
-    printc('[!] Attacking port 79', YELLOW)
+    print_banner('79')
     printc(f'[!] Username found: {username}. Full Name: {full_name}', GREEN)
 
 
@@ -62,8 +61,7 @@ def handle_finger(ip):
     filename = '/usr/share/seclists/Usernames/xato-net-10-million-usernames.txt'
 
     if not os.path.exists(filename):
-        print_separator()
-        print('[!] Attacking port 79')
+        print_banner('79')
         printc('[-] Unable to bruteforce users with Finger Service', RED)
         print(f'[-] {filename} does not exist.\nPlease install seclists.')
         print('[!] Using common unix usernames to test the service.')

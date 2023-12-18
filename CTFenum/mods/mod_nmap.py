@@ -5,7 +5,7 @@ from mods.mod_utils import *
 
 
 def nmap_udp(ip, output_dict):
-    cmd = f'nmap -Pn -n  -T4 -sU --open {ip} -p53,69,88,123,161,11211'
+    cmd = f'nmap -Pn -n -T4 -sU --open -p53,69,161,11211 {ip}'
     output = ''
 
     try:
@@ -31,7 +31,7 @@ def nmap_udp(ip, output_dict):
 
 
 def nmap_tcp(ip, output_dict):
-    cmd = f'nmap -Pn -T3 -n -p- {ip}'
+    cmd = f'nmap -Pn -T4 -n -p- {ip}'
 
     try:
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
@@ -65,7 +65,7 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
         test_ports.remove('23').remove('25')
         ports = ','.join(test_ports)
 
-    cmd = f'nmap -T5 -n -Pn -p{ports} -sCV {ip}'
+    cmd = f'nmap -T5 -n -Pn -sCV -p{ports} {ip}'
 
     try:
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)

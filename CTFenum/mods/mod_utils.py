@@ -1,4 +1,5 @@
 from colorama import init, Fore, Back, Style
+import re
 
 # Initialize colorama
 init()
@@ -30,6 +31,75 @@ def printc(text, color=None, back_color=None):
 # Prints a command output separator
 def print_separator():
     printc('=' * 70, YELLOW)
+
+
+def print_banner(port):
+    print_separator()
+    printc(f'[!] Attacking port {port}', YELLOW)  
+
+
+def scan_for_dns(nmap_detail):
+    detail = nmap_detail.splitlines()
+
+    for line in detail:
+        if 'Domain:' in line:
+            results = re.findall('Domain: (.+)0\.', line)
+            if results:
+                parts = results[0].split('.')
+                if len(parts) > 1:
+                    dns = f'{parts[-2]}.{parts[-1]}'.strip()
+                    return dns
+        elif 'DNS:' in line:
+            results = re.findall('DNS:.+\.(.+\..+)', line)
+            if results:
+                dns = results[0].strip()
+                return dns
+        elif 'DNS_Domain_Name' in line:
+            results = re.findall('DNS_Domain_Name: (.*)\n', line)
+            if results:
+                dns = results[0].strip()
+                return dns
+        elif 'DNS_Tree_Name' in line:
+            results = re.findall('DNS_Tree_Name: (.*)\n', line)
+            if results:
+                dns = results[0].strip()
+                return dns
+        elif ('ssl-cert' in line) and ('commonName' in line):
+            results = re.findall('commonName=(.*)\n', line)
+            if results:
+                parts = results[0].split('.')
+                if len(parts) > 1:
+                    dns = f'{parts[-2]}.{parts[-1]}'.strip()
+                    return dns
+
+
+def clean_hosts(ip, subdomain=None):
+    with open('/etc/hosts', 'r') as file:
+        data = file.readlines()
+
+    line_to_delete = []
+    old_ip = ''
+
+    for line in data:
+        if len(line) < 5:
+            line_to_delete.append(line)
+            continue
+        elif ip in line:
+            line_to_delete.append(line)
+            continue
+        if subdomain:
+            if subdomain in line:
+                line_to_delete.append(line)
+
+    for line in line_to_delete:
+        try:
+            data.remove(line)
+        except:
+            continue
+
+    with open('/etc/hosts', 'w') as file:
+        new_data = ''.join(data)
+        file.write(new_data)
 
 
 # Starts a list of subprocesses and then wait for them to finish
