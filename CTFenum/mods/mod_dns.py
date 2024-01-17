@@ -3,8 +3,8 @@ from mods.mod_utils import *
 
 
 def dns_print_banner():
-    print_separator()
-    printc('[!] Attacking port 53', YELLOW) 
+    print_banner('53')
+    print('[!] DNS')
     print('[+] Subdomains added to /etc/hosts:')
     print_separator()
 

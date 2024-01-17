@@ -10,7 +10,7 @@ import os
 
 
 # Globals
-extensions = ['.txt', '.bak', '.cgi']
+extensions = ['.txt', '.bak', '.cgi', '.html']
 common_words = []
 fast_wordlist = ''
 ip = ''
@@ -135,8 +135,9 @@ def http_identify_server(response):
 
 def http_extract_comments(response):
     body = str(response.text)
-    results_html = re.findall('(<!--.*-->)', body)
-    results_version = re.findall('.*(".{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40}").*\n', body)
+    results_html = re.findall('<!--(.*)-->', body)
+    results_version = re.findall('.*"(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})".*\n', body)
+    results_version_two = re.findall('.*>(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})<.*\n', body)
     comments = results_html + results_version
 
     if comments:
@@ -159,7 +160,14 @@ def call_gobuster(filename, url):
     if (url in fuzz_done):
         return None # Return None if URL has already been tested*
 
-    cmd = f'gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k'   
+    cms_content = ['wp', 'wordpress', 'wp-content', 'wp-includes']
+    for cms in cms_content:
+        if cms in url:
+            if '.php' in extensions:
+                extensions.remove('.php')
+            break
+
+    cmd = f'gobuster dir -u {url} -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k'   
     fuzz_done.append(url)
     response = http_connect_to_server(url) 
     output = None
@@ -167,8 +175,11 @@ def call_gobuster(filename, url):
     if response:
         try:
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+            output = output.replace('\n\n', '\n').split('===============================================================')[4]
+            if not ((len(output) > 4) and (output.strip() != "")):
+                return None
         except:
-            return
+            return None
     
     return output
 
@@ -181,9 +192,9 @@ def http_fuzz_files(url):
 
     if output:
         print_banner(port)
-        print(f'[!] gobuster dir -u {url} -q -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k')
+        print(f'[!] gobuster dir -u {url} -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k')
         printc(f'[!] URL: {url}', GREEN)
-        print(output.replace('\n\n', '\n'))
+        print(output)
         
         # Handle Redirections
         redirections = re.findall('--> (.+)\]', output)
@@ -242,7 +253,7 @@ def register_subdomains(subdomains, cmd=None):
 def http_fuzz_subdomains():
     filename = fast_wordlist
 
-    cmd = f'gobuster vhost -u {dns} -q -w {filename} -t 70 -z --no-error --append-domain -k'
+    cmd = f'gobuster vhost -u {dns} -w {filename} -t 70 -z --no-error --append-domain -k'
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except:

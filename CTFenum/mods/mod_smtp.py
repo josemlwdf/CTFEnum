@@ -10,6 +10,7 @@ def handle_smtp(ip):
             result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))[0]    
             if result:
                 print_banner('25')
+                print('[!] SMTP')
                 print(f'[!] {cmd}')
                 print(result)
     except:

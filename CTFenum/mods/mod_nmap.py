@@ -1,11 +1,10 @@
 import subprocess
-import multiprocessing
 import re
 from mods.mod_utils import *
 
 
 def nmap_udp(ip, output_dict):
-    cmd = f'nmap -Pn -n -T4 -sU --open -p53,69,161,11211 {ip}'
+    cmd = f'nmap -F -T4 -sU -Pn --max-parallelism 512 --min-rtt-timeout 50ms --max-retries 1 -n --open {ip}'
     output = ''
 
     try:
@@ -27,33 +26,35 @@ def nmap_udp(ip, output_dict):
 
             output_dict['nmap_udp_ports'] = ports
     except:
-        return
+        pass        
+    return output_dict
 
 
 def nmap_tcp(ip, output_dict):
-    cmd = f'nmap -Pn -T4 -n -p- {ip}'
+    cmd = f'nmap -Pn -T3 -n -p- {ip}'
+    output = ''
 
     try:
-        output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
+        output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)   
+        ports = ''
+
+        result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+
+        if result:
+            output = result[0].replace('@n@', '\n').replace('\n\n', '')
+
+            print_separator()
+            printc('OPEN TCP PORTS:', YELLOW)
+            print(f'[!] {cmd}')
+            print(output)
+
+            ports = re.findall('@n@([0-9]+)/', result[0])
+            ports = ','.join(ports)
+        
+            output_dict['nmap_tcp_ports'] = ports
     except:
-        return
-
-    ports = ''
-
-    result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
-
-    if result:
-        output = result[0].replace('@n@', '\n').replace('\n\n', '')
-
-        print_separator()
-        printc('OPEN TCP PORTS:', YELLOW)
-        print(f'[!] {cmd}')
-        print(output)
-
-        ports = re.findall('@n@([0-9]+)/', result[0])
-        ports = ','.join(ports)
-    
-        output_dict['nmap_tcp_ports'] = ports
+        pass    
+    return output_dict
 
 
 def nmap_detailed_tcp_scan(ip, ports, output_dict):
@@ -69,38 +70,32 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
 
     try:
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
+    
+        result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+
+        if result:
+            output = result[0].replace('@n@', '\n').replace('\n\n', '')
+
+            print_separator()
+            print('NMAP TCP OUTPUT:')
+            print(f'[!] {cmd}')
+            print(output)
+
+        output_dict['nmap_detailed'] = output
     except:
-        return
-
-    result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
-
-    if result:
-        output = result[0].replace('@n@', '\n').replace('\n\n', '')
-
-        print_separator()
-        print('NMAP TCP OUTPUT:')
-        print(f'[!] {cmd}')
-        print(output)
-
-    output_dict['nmap_detailed'] = output
+        pass
+    return output_dict
 
 
 def nmap(ip):
     print_separator()
     print('[!] Checking open ports')
     # Get open ports on target
-    output_dict = multiprocessing.Manager().dict()
-
-    procs = []
+    output_dict = {}
 
     # Start processes to execute the nmap commands
-    process = multiprocessing.Process(target=nmap_tcp, args=(ip, output_dict))
-    procs.append(process)
-
-    process = multiprocessing.Process(target=nmap_udp, args=(ip, output_dict))
-    procs.append(process)
-
-    procs = launch_procs(procs)
+    output_dict = nmap_tcp(ip, output_dict)   
+    output_dict = nmap_udp(ip, output_dict)
 
     print_separator()
     print('[!] Generating Nmap output')
@@ -108,11 +103,8 @@ def nmap(ip):
     tcp_ports = output_dict.get('nmap_tcp_ports', '')
 
     if tcp_ports:
-        process = multiprocessing.Process(target=nmap_detailed_tcp_scan, args=(ip, tcp_ports, output_dict))
-        procs.append(process)
+        output_dict = nmap_detailed_tcp_scan(ip, tcp_ports, output_dict)
 
-    udp_ports = output_dict.get('nmap_udp_ports', '')
-
-    procs = launch_procs(procs)
+    #udp_ports = output_dict.get('nmap_udp_ports', '')
 
     return output_dict

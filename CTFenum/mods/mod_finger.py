@@ -52,6 +52,7 @@ def finger_user(ip, username):
 
 def finger_banner(username, full_name):
     print_banner('79')
+    print('[!] FINGER')
     printc(f'[!] Username found: {username}. Full Name: {full_name}', GREEN)
 
 

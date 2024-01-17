@@ -1,4 +1,3 @@
-import subprocess
 import multiprocessing
 from ftplib import FTP
 from mods.mod_utils import *
@@ -73,6 +72,7 @@ def ftp_brute(ip, port):
 
 def print_this_banner(port):
     print_banner(port)  
+    print('[!] FTP')
     print('''[!] If the FTP server does not lists the content, use the commands like:
     ftp:>passive
     ftp:>bin
@@ -80,7 +80,15 @@ def print_this_banner(port):
 
 def handle_ftp(target, port, nmap_detail):
     if ('ftp-anon' in nmap_detail):
+        username = None
+        if 'Logged in as ftp' in nmap_detail:
+            username = 'ftp'
         print_banner(port)
         printc('[+] Server have anonymous login enabled', GREEN)
+        if not username:
+            username = 'anonymous'
+        printc(f'[+] FTP Credentials {username}: ', GREEN)
+        if '20/tcp   closed ftp-data' in nmap_detail:
+            printc('[-] Service is exposed but might be Unavailable', RED)
     else:        
         ftp_brute(target, port)

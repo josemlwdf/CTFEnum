@@ -10,6 +10,7 @@ def handle_telnet(ip):
             result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))[0]    
             if result:
                 print_banner('23')
+                print('[!] TELNET')
                 print(f'[!] {cmd}')
                 print(result)
     except:

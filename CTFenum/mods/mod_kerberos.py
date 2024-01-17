@@ -19,6 +19,7 @@ def handle_kerberos(ip, dns):
                 output = result[0].replace('@n@', '\n').replace('\n\n', '')
 
                 print_banner('88')
+                print('[!] KERBEROS')
                 print(cmd)
                 printc('[+] Some usernames where found.', GREEN)
                 printc(output, BLUE)
