@@ -134,8 +134,10 @@ def http_identify_server(response):
 
 
 def http_extract_comments(response):
+    global comments_founded
+    
     body = str(response.text)
-    results_html = re.findall('<!--(.*)-->', body)
+    results_html = re.findall('(<!--.*-->)', body)
     results_version = re.findall('.*"(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})".*\n', body)
     results_version_two = re.findall('.*>(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})<.*\n', body)
     comments = results_html + results_version
