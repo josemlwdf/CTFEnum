@@ -1,4 +1,3 @@
-import subprocess
 import multiprocessing
 import sys
 import re
@@ -13,6 +12,8 @@ from mods import mod_finger
 from mods import mod_http
 from mods import mod_kerberos
 from mods import mod_smb
+from mods import mod_imap
+from mods import mod_snmp
 
 
 def arg_error():
@@ -65,7 +66,7 @@ def main():
             print_banner(port)
             print('[!] SSH')
             print('[!] You can try to bruteforce credentials using [netexec|crackmapexec|hydra].')
-            print("netexec ssh $(IP) -u usernames.txt -p passwords.txt | grep -E '\+|\*'")
+            print("netexec ssh $(IP) -u usernames.txt -p passwords.txt | grep -v fail")
         elif port == '23': 
             process = multiprocessing.Process(target=mod_telnet.handle_telnet, args=(ip,))
             procs.append(process)
@@ -92,6 +93,9 @@ def main():
             print_banner(port)
             print('[!] RPCBind ')
             print('[!] Reference: https://book.hacktricks.xyz/network-services-pentesting/pentesting-rpcbind')
+        elif (port == '143') or (port == '993'):
+            process = multiprocessing.Process(target=mod_imap.handle_imap, args=(ip, port))
+            procs.append(process)
         elif port == '445':
             process = multiprocessing.Process(target=mod_smb.handle_smb, args=(ip, ))
             procs.append(process)
@@ -101,7 +105,9 @@ def main():
         if port == '69':
             process = multiprocessing.Process(target=mod_tftp.handle_tftp, args=(ip,))
             procs.append(process)
-        
+        if port == '161':
+            process = multiprocessing.Process(target=mod_snmp.handle_snmp, args=(ip,))
+            procs.append(process)        
     if ('53' in tcp_ports) or ('53' in udp_ports):
         process = multiprocessing.Process(target=mod_dns.handle_dns, args=(ip, dns))
         procs.append(process)

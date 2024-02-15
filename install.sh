@@ -37,6 +37,12 @@ if ! command_exists dig; then
     sudo apt install dnsutils -y
 fi
 
+# Check and install snmpwalk (part of snmp)
+if ! command_exists snmpwalk; then
+    echo "Installing snmp (includes snmpwalk)..."
+    sudo apt install snmp -y
+fi
+
 # Clone CTFEnum repository and set up ctfenum command
 if [ ! -d "/opt/CTFEnum" ]; then
     echo "Cloning CTFEnum repository..."

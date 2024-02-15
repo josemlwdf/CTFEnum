@@ -8,18 +8,18 @@ def handle_kerberos(ip, dns):
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+
+        if output:
+            if 'Discovered' in output:
+                result = re.findall('@n@(Discovered .+@n@@n@)', output.replace('\n', '@n@'))
+
+                if result:
+                    output = result[0].replace('@n@', '\n').replace('\n\n', '')
+
+                    print_banner('88')
+                    print('[!] KERBEROS')
+                    print(cmd)
+                    printc('[+] Some usernames where found.', GREEN)
+                    printc(output, BLUE)
     except:
         return
-
-    if output:
-        if 'Discovered' in output:
-            result = re.findall('@n@(Discovered .+@n@@n@)', output.replace('\n', '@n@'))
-
-            if result:
-                output = result[0].replace('@n@', '\n').replace('\n\n', '')
-
-                print_banner('88')
-                print('[!] KERBEROS')
-                print(cmd)
-                printc('[+] Some usernames where found.', GREEN)
-                printc(output, BLUE)

