@@ -157,7 +157,7 @@ def http_extract_comments(response):
         printc(comments_data, GREEN)
 
 
-def call_gobuster(filename, url):
+def call_gobuster(filename, url, ban_code=None):
     global fuzz_done
     if (url in fuzz_done):
         return None # Return None if URL has already been tested*
@@ -170,6 +170,8 @@ def call_gobuster(filename, url):
             break
 
     cmd = f'gobuster dir -u {url} -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k'   
+    if ban_code:
+        cmd += f' {ban_code}'
     fuzz_done.append(url)
     response = http_connect_to_server(url) 
     output = None
@@ -177,6 +179,13 @@ def call_gobuster(filename, url):
     if response:
         try:
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+
+            if 'To continue please exclude the status code or the length' in output:
+                code_found = re.findall('=> (...) \(Length:', output)
+                if code_found:
+                    code = code_found[0]
+                    call_gobuster(filename, url, code)
+                
             output = output.replace('\n\n', '\n').split('===============================================================')[4]
             if not ((len(output) > 4) and (output.strip() != "")):
                 return None
