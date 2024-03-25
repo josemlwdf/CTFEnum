@@ -58,13 +58,20 @@ def nmap_tcp(ip, output_dict):
 
 
 def nmap_detailed_tcp_scan(ip, ports, output_dict):
+    blacklisted = ['23', '25']
     test_ports = ports.split(',')
-    if ('23' in ports) or ('25' in ports):
-        printc('[!] I have identified some services that slows Nmap', YELLOW)
-        printc('[!] Some of these ports will be removed from the detailed scan', YELLOW)
-        printc('[!] This scan could still take some time. Be patient', YELLOW)
-        test_ports.remove('23').remove('25')
-        ports = ','.join(test_ports)
+
+    for blacklisted_port in blacklisted:
+        for port in test_ports:
+            if (blacklisted_port == port):
+                printc('[!] I have identified some services that slows Nmap', YELLOW)
+                printc(f'[!] Some of these ports will be removed from the detailed scan: {blacklisted_port}', YELLOW)
+                printc('[!] This scan could still take some time. Be patient', YELLOW)
+                try:
+                    test_ports.remove(blacklisted_port)
+                except:
+                    continue
+    ports = ','.join(test_ports)
 
     cmd = f'nmap -T5 -n -Pn -sCV -p{ports} {ip}'
 
