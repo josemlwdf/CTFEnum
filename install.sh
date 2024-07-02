@@ -25,6 +25,12 @@ if ! command_exists gobuster; then
     sudo apt install gobuster -y
 fi
 
+# Check and install seclists
+if ! command_exists feroxbuster; then
+    echo "Installing seclists..."
+    sudo apt install feroxbuster -y
+fi
+
 # Check and install Metasploit
 if ! command_exists msfconsole; then
     echo "Installing Metasploit..."
