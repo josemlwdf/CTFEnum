@@ -25,9 +25,9 @@ if ! command_exists gobuster; then
     sudo apt install gobuster -y
 fi
 
-# Check and install seclists
+# Check and install feroxbuster
 if ! command_exists feroxbuster; then
-    echo "Installing seclists..."
+    echo "Installing feroxbuster..."
     sudo apt install feroxbuster -y
 fi
 
