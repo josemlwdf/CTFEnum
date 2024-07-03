@@ -78,10 +78,12 @@ def bruteforce(target, port):
             printc('[+] Creds Found!!!', GREEN)
             print('')
             for line in output.splitlines():
-                creds = re.findall('\[\+\].*Success.*\\\(.*)\'', line)[0]
-                if (creds.split(':')[1] == ''): continue
-                print(creds)
-                credentials.append(creds)
+                creds = re.findall("Success:\s\'(.*)\'", line)
+                if creds:
+                    creds = creds[0].split('\\')[1]
+                    if (creds.split(':')[1] == ''): continue
+                    printc(f'[+] {creds}', BLUE)
+                    credentials.append(creds)
     export_credentials()
 
 
@@ -108,9 +110,9 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
 def handle_smb(target, port):
     len_default_users = len(smb_users)
 
-    # RID CYCLING NO PASS
+    # RID CYCLING AS NULL
     rid_cycling(target, user='')
-
+    # RID CYCLING AS GUEST
     if len_default_users == len(smb_users):
         rid_cycling(target)
 
@@ -124,17 +126,17 @@ def handle_smb(target, port):
             rid_cycling(target, user, passw, domain)
 
     # ENUMERATE SHARES
+    # SHARES AS GUEST
     enumerate_shares(target)
-
+    # SHARES AS NULL
     enumerate_shares(target, user='')
-
+    # SHARES WITH CREDS
     if (len(credentials)>0):
         for cred in credentials:
             user, passw = cred.split(':')[:2]
             enumerate_shares(target, user, passw, domain)
 
     try:
-        #os.remove('smb_pass.txt')
-        pass
+        os.remove('smb_pass.txt')
     except Exception as e:
         printc(f'[-] {e}', RED)

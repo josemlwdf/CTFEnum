@@ -18,25 +18,19 @@ common_ftp_passwords = [
 def ftp_connect(server, port, username, password):
     try:
         # Connect to the FTP server on the specified port
-        ftp = FTP(server)
-
+        ftp = FTP()
+        ftp.connect(server, int(port))
+        
         # Login with username and password
         ftp.login(user=username, passwd=password)
 
-        creds_found = True
-        print_separator()
-        print_banner(port)
-        print_separator()
-        print('[!] Testing common credentials for FTP')
-
         # Print a message upon successful connection
-        printc(f'[+] FTP Credentials {username}:{password}', GREEN)
-        print_separator()
+        print(f'[+] FTP Credentials {username}:{password}', 'GREEN')
 
         # Perform operations (e.g., list directories, download/upload files) if needed
         # Example: List directories
-        printc('[!] Listing FTP root', YELLOW)
-        print_separator()
+        print('[!] Listing FTP root', 'YELLOW')
+        print('')
         ftp.dir()
 
         # Close the FTP connection
@@ -79,16 +73,18 @@ def print_this_banner(port):
     ftp:>ls -la''')
 
 def handle_ftp(target, port, nmap_detail):
+    print_this_banner(port)
     if ('ftp-anon' in nmap_detail):
         username = None
         if 'Logged in as ftp' in nmap_detail:
             username = 'ftp'
-        print_banner(port)
         printc('[+] Server have anonymous login enabled', GREEN)
         if not username:
             username = 'anonymous'
-        printc(f'[+] FTP Credentials {username}: ', GREEN)
+        printc(f'[+] FTP Credentials {username} : nopass', GREEN)
         if '20/tcp   closed ftp-data' in nmap_detail:
             printc('[-] Service is exposed but might be Unavailable', RED)
+        ftp_connect(target, port, username, '')        
     else:        
+        print('[!] Testing common credentials for FTP')
         ftp_brute(target, port)
