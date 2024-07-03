@@ -36,6 +36,33 @@ The program will perform a comprehensive port scan using Nmap to identify open T
 
 CTFEnum will then initiate module-specific handlers based on identified open ports to analyze and potentially exploit services running on these ports.
 
+## Detailed Features (Modules)
+
+### FTP 
+
+
+### SSH
+
+### TELNET
+
+### SMTP
+
+### FINGER
+
+### HTTP
+
+### KERBEROS
+
+### POP
+
+### RPC BIND
+
+### IMAP
+
+### IMAP
+
+### SMB
+
 ## Notes
 
 ``The tool suggests actions for certain ports, such as potential brute force attempts or specific commands to execute.
