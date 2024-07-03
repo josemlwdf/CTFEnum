@@ -39,17 +39,27 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 ## Detailed Features (Modules)
 
 ### FTP 
-
+- Check for anonymous login
+- Bruteforce using common users and passwords
+- List directories
 
 ### SSH
+- Suggests SSH bruteforce
 
 ### TELNET
+- Retrieve Nmap information using this service specific scripts
 
 ### SMTP
+- Retrieve Nmap information using this service specific scripts
 
 ### FINGER
+- Enumerate users using this service
 
 ### HTTP
+- Identify server and possible common technologies
+- Crawl and bruteforce locations using feroxbuster
+- Detects VHOSTS and add them automatically to /etc/hosts file
+- Extract comments from the founded URLs
 
 ### KERBEROS
 
