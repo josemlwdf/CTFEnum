@@ -1,1 +1,2 @@
 *.txt
+/mods/__pycache__/*
