@@ -56,7 +56,7 @@ def handle_dns(ip, dns=None):
         dns_print_banner()
         printc('[-] None', RED)
         print('[!] If you find a FQDN you can use this command to look for other subdomains:')
-        printc(f'dig axfr @{ip} your.domain.tld', YELLOW)
+        print(f'[!] dig axfr @{ip} your.domain.tld')
 
     cmd_dns = f'dig axfr @{ip} {dns}'
 
@@ -82,7 +82,7 @@ def handle_dns(ip, dns=None):
                     try:
                         dns_add_subdomains(ip, subdomains)
                         dns_print_banner()
-                        print(f'[!] {cmd}')
+                        print(f'[!] {cmd_dns}')
                         printc('\n'.join(subdomains), GREEN)
                     except:
                         return

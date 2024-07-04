@@ -12,7 +12,7 @@ def handle_imap(ip, port):
             print_banner(port)
             print('[!] IMAP ')
             print('[!] https://book.hacktricks.xyz/network-services-pentesting/pentesting-imap')
-            print(cmd)
+            print(f'[!] {cmd}')
             printc(output, BLUE)
     except:
         return

@@ -56,6 +56,9 @@ def main():
 
     if dns:
         clean_hosts(ip, dns)
+        register_dns = [dns]
+        if '.' in dns: register_dns.append(dns.split('.')[0])
+        mod_dns.dns_add_subdomains(ip, register_dns)
 
     # TCP
     for port in tcp_ports.reverse():
@@ -131,4 +134,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    mod_kerberos.handle_kerberos(sys.argv[1], 'soupedecode.local')
+    #main()

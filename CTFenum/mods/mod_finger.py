@@ -63,7 +63,7 @@ def handle_finger(ip):
     if not os.path.exists(filename):
         print_banner('79')
         printc('[-] Unable to bruteforce users with Finger Service', RED)
-        print(f'[-] {filename} does not exist.\nPlease install seclists.')
+        print(f'[-] {filename} does not exist.\nPlease install seclists.', RED)
         print('[!] Using common unix usernames to test the service.')
         usernames = common_unixnames
 
