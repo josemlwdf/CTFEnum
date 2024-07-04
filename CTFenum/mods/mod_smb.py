@@ -13,6 +13,10 @@ def export_wordlists():
     with open('smb_users.txt', 'w') as file:
         file.write('\n'.join(smb_users))
         file.close()
+        ulist = 'common'
+        if ('it' not in smb_users):
+            ulist = 'founded'
+        printc(f'[+] Exported {ulist} users list to smb_users.txt', GREEN)
     
     with open('smb_pass.txt', 'w') as file:
         file.write('\n'.join(smb_passwords))
@@ -23,6 +27,7 @@ def export_credentials():
     with open('smb_credentials.txt', 'w') as file:
         file.write('\n'.join(credentials))
         file.close()
+        printc('[+] Credentials stored in smb_credentials.txt', GREEN)
 
 
 def rid_cycling(target, user="Guest", passw="", domain="."):
