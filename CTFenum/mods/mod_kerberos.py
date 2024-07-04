@@ -4,7 +4,7 @@ import os
 
 def handle_kerberos(target, domain):
     # Try to bruteforce Usernames
-    #enum_users(target, domain)
+    enum_users(target, domain)
     # Check Kerberoast using guest creds
     check_kerberoast(target, domain)
     

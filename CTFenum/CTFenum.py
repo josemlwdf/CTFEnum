@@ -133,5 +133,5 @@ def main():
 
 
 if __name__ == "__main__":
-    mod_kerberos.handle_kerberos(sys.argv[1], 'soupedecode.local')
-    #main()
+    #mod_kerberos.handle_kerberos(sys.argv[1], 'soupedecode.local')
+    main()
