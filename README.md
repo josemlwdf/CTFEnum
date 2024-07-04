@@ -38,51 +38,51 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 ## Detailed Features (Modules)
 
-### NMAP Scan
+#### NMAP Scan
 - Automatic nmap ports detection + Nmap port details Scan.
 - Scraps for DNS from Nmpa Scan.
 
-### FTP 
+#### FTP 
 - Check for anonymous login.
 - Bruteforce using common users and passwords.
 - List directories.
 
-### SSH
+#### SSH
 - Suggests SSH credentials bruteforce.
 
-### TELNET
+#### TELNET
 - Retrieve Nmap information using this service specific scripts.
 
-### SMTP
+#### SMTP
 - Retrieve Nmap information using this service specific scripts.
 
-### FINGER
+#### FINGER
 - Enumerate users using this service.
 
-### HTTP
+#### HTTP
 - Identify server and possible common technologies.
 - Crawl and bruteforce locations using feroxbuster.
 - Detects VHOSTS and add them automatically to /etc/hosts file.
 - Extract comments from the founded URLs.
 - Test automatically for Apache Server CVEs if the version matches.
 
-### KERBEROS
+#### KERBEROS
 - Kerberos usenames enumeration.
 - Kerberoast Automatic ticket Extraction.
 - Kerberos Atuomatic Synchronization with DC.
 - Automatic Ticket Cracking (Optional).
 
-### POP
+#### POP
 - Suggests POP credentials bruteforce.
 
-### RPC BIND
+#### RPC BIND
 - Suggest Hacktrics page as reference.
 
-### IMAP
+#### IMAP
 - Enumerates IMAP version.
 - Suggests Hacktrics page as reference.
 
-### SMB
+#### SMB
 - RID Cycling usernames enumeration Attack as Guest.
 - RID Cycling usernames enumeration Attack with founded credentials.
 - Bruteforce using common users and passwords.
@@ -90,15 +90,15 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 - Bruteforce using options NULL pass, User as Pass and common passwords.
 - Shares enumeration using NULL creds, Guest and founded credentials.
 
-### TFTP
+#### TFTP
 - Check if TFTP server allow PUT files.
 
-### SNMP
+#### SNMP
 - Automatic Nmap SNMP targeted scan.
 - Community password bruteforce.
 - Automatic strings extraction.
 
-### DNS
+#### DNS
 - Perform dig scan on DNS.
 - Automatic DNS registration on /etc/hosts file.
 
