@@ -131,5 +131,4 @@ def main():
 
 
 if __name__ == "__main__":
-    mod_smb.handle_smb(sys.argv[1], '445')
-    #main()
+    main()

@@ -5,13 +5,13 @@ from mods.mod_utils import *
 
 # List of common FTP users
 common_ftp_users = [
-    'admin','user','ftp','anonymous','test','guest','root','administrator','ftpuser','superuser','demo','manager','operator','webmaster','support','sysadmin','backup','developer','office'
+    'admin','user','ftp','test','guest','root','administrator','ftpuser','superuser','demo','manager','operator','webmaster','support','sysadmin','backup','developer','office'
 ]
 
 
 # List of common FTP passwords
 common_ftp_passwords = [
-    'password','123456','admin','12345','12345678','qwerty','1234567','123456789','1234','password1','abc123','letmein','password123','changeme','123123','login','welcome','test123','ftp123'
+    '', ' ', 'password','123456','admin','12345','12345678','qwerty','1234567','123456789','1234','password1','abc123','letmein','password123','changeme','123123','login','welcome','test123','ftp123'
 ]
 
 
@@ -25,11 +25,11 @@ def ftp_connect(server, port, username, password):
         ftp.login(user=username, passwd=password)
 
         # Print a message upon successful connection
-        print(f'[+] FTP Credentials {username}:{password}', 'GREEN')
+        printc(f'[+] FTP Credentials "{username}:{password}"', BLUE)
 
         # Perform operations (e.g., list directories, download/upload files) if needed
         # Example: List directories
-        print('[!] Listing FTP root', 'YELLOW')
+        printc('[!] Listing FTP root', YELLOW)
         print('')
         ftp.dir()
 
@@ -75,16 +75,13 @@ def print_this_banner(port):
 def handle_ftp(target, port, nmap_detail):
     print_this_banner(port)
     if ('ftp-anon' in nmap_detail):
-        username = None
+        printc('[+] Server have anonymous login enabled', GREEN)
+        username = 'anonymous'
         if 'Logged in as ftp' in nmap_detail:
             username = 'ftp'
-        printc('[+] Server have anonymous login enabled', GREEN)
-        if not username:
-            username = 'anonymous'
-        printc(f'[+] FTP Credentials {username} : nopass', GREEN)
         if '20/tcp   closed ftp-data' in nmap_detail:
             printc('[-] Service is exposed but might be Unavailable', RED)
-        ftp_connect(target, port, username, '')        
+        ftp_connect(target, port, username, 'nopass')        
     else:        
-        print('[!] Testing common credentials for FTP')
+        printc('[!] Testing common credentials for FTP', YELLOW)
         ftp_brute(target, port)
