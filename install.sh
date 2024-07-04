@@ -25,6 +25,18 @@ if ! command_exists gobuster; then
     sudo apt install gobuster -y;
 fi
 
+# Check and install sntp
+if ! command_exists sntp; then
+    echo "Installing sntp..."
+    sudo apt install sntp -y;
+fi
+
+# Check and install john the ripper
+if ! command_exists john; then
+    echo "Installing john..."
+    sudo apt install jhon -y;
+fi
+
 # Check and install impacket
 if ! command_exists impacket-GetUserSPNs; then
     echo "Installing Impacket..."
