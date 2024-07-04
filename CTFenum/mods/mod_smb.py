@@ -26,7 +26,7 @@ def export_credentials():
 
 
 def rid_cycling(target, user="Guest", passw="", domain="."):
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set RHOSTS {target};set SMBUser {user};set SMBPass {passw};set MinRID 1000;set MaxRID 5000;set THREADS 10;set SMBDomain {domain};run;exit;"'
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_lookupsid;set RHOSTS {target};set SMBUser {user};set SMBPass {passw};set MinRID 500;set MaxRID 5000;set THREADS 10;set SMBDomain {domain};run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -103,8 +103,6 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
             print('[!] Enumerating Shares.')
             print('')
             print(output)
-
-    rid_cycling(target, user, passw, domain)
 
 
 def handle_smb(target, port):
