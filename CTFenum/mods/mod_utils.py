@@ -71,6 +71,7 @@ def scan_for_dns(nmap_detail):
                 if len(parts) > 1:
                     dns = f'{parts[-2]}.{parts[-1]}'.strip()
                     return dns
+    return ''
 
 
 def clean_hosts(ip, subdomain=None):
@@ -78,7 +79,6 @@ def clean_hosts(ip, subdomain=None):
         data = file.readlines()
 
     line_to_delete = []
-    old_ip = ''
 
     for line in data:
         if len(line) < 5:

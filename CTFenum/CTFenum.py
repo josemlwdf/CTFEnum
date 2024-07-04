@@ -58,7 +58,7 @@ def main():
         clean_hosts(ip, dns)
 
     # TCP
-    for port in tcp_ports:
+    for port in tcp_ports.reverse():
             # FTP
         if port == '21':
             process = multiprocessing.Process(target=mod_ftp.handle_ftp, args=(ip, port, nmap_detail))
@@ -82,7 +82,7 @@ def main():
             process = multiprocessing.Process(target=mod_finger.handle_finger, args=(ip,))
             procs.append(process)
             # HTTP
-        elif (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443'):
+        elif (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443') or (port == '10443'):
             procs = launch_procs(procs)
             process = multiprocessing.Process(target=mod_http.handle_http, args=(ip, port))
             procs.append(process)
