@@ -25,6 +25,12 @@ if ! command_exists gobuster; then
     sudo apt install gobuster -y;
 fi
 
+# Check and install impacket
+if ! command_exists impacket-GetUserSPNs; then
+    echo "Installing Impacket..."
+    sudo apt install impacket-scripts -y;
+fi
+
 # Check and install feroxbuster
 if ! command_exists feroxbuster; then
     echo "Installing feroxbuster..."
