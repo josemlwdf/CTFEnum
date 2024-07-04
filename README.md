@@ -38,40 +38,69 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 ## Detailed Features (Modules)
 
+### NMAP Scan
+- Automatic nmap ports detection + Nmap port details Scan.
+- Scraps for DNS from Nmpa Scan.
+
 ### FTP 
-- Check for anonymous login
-- Bruteforce using common users and passwords
-- List directories
+- Check for anonymous login.
+- Bruteforce using common users and passwords.
+- List directories.
 
 ### SSH
-- Suggests SSH bruteforce
+- Suggests SSH credentials bruteforce.
 
 ### TELNET
-- Retrieve Nmap information using this service specific scripts
+- Retrieve Nmap information using this service specific scripts.
 
 ### SMTP
-- Retrieve Nmap information using this service specific scripts
+- Retrieve Nmap information using this service specific scripts.
 
 ### FINGER
-- Enumerate users using this service
+- Enumerate users using this service.
 
 ### HTTP
-- Identify server and possible common technologies
-- Crawl and bruteforce locations using feroxbuster
-- Detects VHOSTS and add them automatically to /etc/hosts file
-- Extract comments from the founded URLs
+- Identify server and possible common technologies.
+- Crawl and bruteforce locations using feroxbuster.
+- Detects VHOSTS and add them automatically to /etc/hosts file.
+- Extract comments from the founded URLs.
+- Test automatically for Apache Server CVEs if the version matches.
 
 ### KERBEROS
+- Kerberos usenames enumeration.
+- Kerberoast Automatic ticket Extraction.
+- Kerberos Atuomatic Synchronization with DC.
+- Automatic Ticket Cracking (Optional).
 
 ### POP
+- Suggests POP credentials bruteforce.
 
 ### RPC BIND
+- Suggest Hacktrics page as reference.
 
 ### IMAP
-
-### IMAP
+- Enumerates IMAP version.
+- Suggests Hacktrics page as reference.
 
 ### SMB
+- RID Cycling usernames enumeration Attack as Guest.
+- RID Cycling usernames enumeration Attack with founded credentials.
+- Bruteforce using common users and passwords.
+- Bruteforce using founded users.
+- Bruteforce using options NULL pass, User as Pass and common passwords.
+- Shares enumeration using NULL creds, Guest and founded credentials.
+
+### TFTP
+- Check if TFTP server allow PUT files.
+
+### SNMP
+- Automatic Nmap SNMP targeted scan.
+- Community password bruteforce.
+- Automatic strings extraction.
+
+### DNS
+- Perform dig scan on DNS.
+- Automatic DNS registration on /etc/hosts file.
 
 ## Notes
 
