@@ -23,6 +23,8 @@ def arg_error():
 
 
 def main():
+    check_version()
+    
     arg = ''
 
     if len(sys.argv) != 2:
@@ -133,5 +135,4 @@ def main():
 
 
 if __name__ == "__main__":
-    #mod_kerberos.handle_kerberos(sys.argv[1], 'soupedecode.local')
     main()

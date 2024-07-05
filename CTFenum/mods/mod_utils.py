@@ -1,5 +1,8 @@
 from colorama import init, Fore, Back, Style
 import re
+import requests
+import subprocess
+import sys
 
 # Initialize colorama
 init()
@@ -132,4 +135,52 @@ def get_usernames_esr(username):
 
 # Version check utility
 def check_version():
+    banner = """
+╔─────────────────────────────────────────────────────────────────────╗
+│  ██████╗████████╗███████╗    ███████╗███╗   ██╗██╗   ██╗███╗   ███╗ │
+│ ██╔════╝╚══██╔══╝██╔════╝    ██╔════╝████╗  ██║██║   ██║████╗ ████║ │
+│ ██║        ██║   █████╗      █████╗  ██╔██╗ ██║██║   ██║██╔████╔██║ │
+│ ██║        ██║   ██╔══╝      ██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║ │
+│ ╚██████╗   ██║   ██║         ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║ │
+│  ╚═════╝   ╚═╝   ╚═╝         ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝ │
+╚─────────────────────────────────────────────────────────────────────╝
+"""
+    printc(banner, GREEN)
+
+    with open('/opt/CTFEnum/CTFenum/mods/version', 'r') as file:
+        current_version = file.read()
+        print('[!] Version: ', end='')
+        printc(current_version, GREEN)
+        current_version = current_version.replace('.', '')
+
+    online_version_url = 'https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/CTFenum/mods/version'
+    response = requests.get(online_version_url)
+    if response:
+        formatted_online_version = response.text
+        online_version = formatted_online_version.replace('.', '')
+
     
+    if online_version == current_version:
+        printc('[*] A New version of CTF Enum is available.', GREEN)
+        print('[!] GitHub version is: ', end='')
+        printc(formatted_online_version, YELLOW, RED)
+
+    answer = ''
+
+    while (answer == ''):
+        answer = input('Would you line to update now Y/N: ')
+    
+    if (answer.upper() == 'Y'):
+        cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
+
+        try:
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+
+            if output:
+                print('[!] Updating...')
+                printc('[+] Update successful.', GREEN)
+                print('[!] Exiting now. Launch CTF Enum again to load the new verison.')
+                print('[!] BYE!!!')
+                sys.exit(0)
+        except Exception as e:
+            printc(f'[-] {e}', RED)

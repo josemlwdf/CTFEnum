@@ -29,8 +29,7 @@ def enum_users(target, domain):
     except Exception as e:
         if not os.path.exists(filename):
             print(f'[-] {filename} does not exist.\nPlease install seclists.')
-        printc(e, RED)
-        return
+        printc(f'[-] {e}', RED)
     
 
 def check_kerberoast(target, domain, user='ybob317', passw='ybob317'):
@@ -99,7 +98,7 @@ def check_kerberoast(target, domain, user='ybob317', passw='ybob317'):
                 print_cracking_cmd()
     except Exception as e:
         printc(f'[-] {e}', RED)
-        return
+        
     
 def print_cracking_cmd():
     print('[!] To crack the tickets you can use john.')
