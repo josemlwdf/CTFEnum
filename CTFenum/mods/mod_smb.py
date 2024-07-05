@@ -3,7 +3,7 @@ import re
 from mods.mod_utils import *
 import os
 
-smb_users = ["admin","user","manager","supervisor","administrator","test","it","backup","lab","demo","smb"]
+smb_users = ["admin","user","manager","supervisor","administrator","test","operator","backup","lab","demo","smb"]
 smb_passwords = ["password","admin","administrator","backup","test","lab","demo"]
 domain = '.'
 credentials = []
