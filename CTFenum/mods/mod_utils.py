@@ -128,3 +128,8 @@ def launch_procs(procs):
 # Returns from a given username: an empty value, the same value, the reversed value
 def get_usernames_esr(username):
     return ['', username, ''.join(reversed(username))]
+
+
+# Version check utility
+def check_version():
+    
