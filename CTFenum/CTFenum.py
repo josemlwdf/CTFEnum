@@ -18,13 +18,13 @@ from mods import mod_snmp
 
 def arg_error():
     printc("[-] Please provide a target IP", RED)
-    print(f"[-] Ex: python3 {sys.argv[0]} 192.168.0.1")
+    print(f"[!] Ex: python3 {sys.argv[0]} 192.168.0.1")
     sys.exit(1)
 
 
 def main():
     check_version()
-    
+
     arg = ''
 
     if len(sys.argv) != 2:

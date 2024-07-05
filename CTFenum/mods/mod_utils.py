@@ -159,28 +159,27 @@ def check_version():
         formatted_online_version = response.text
         online_version = formatted_online_version.replace('.', '')
 
-    
-    if online_version == current_version:
+    if online_version > current_version:
         printc('[*] A New version of CTF Enum is available.', GREEN)
         print('[!] GitHub version is: ', end='')
         printc(formatted_online_version, YELLOW, RED)
 
-    answer = ''
+        answer = ''
 
-    while (answer == ''):
-        answer = input('Would you line to update now Y/N: ')
-    
-    if (answer.upper() == 'Y'):
-        cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
+        while (answer == ''):
+            answer = input('Would you line to update now Y/N: ')
+        
+        if (answer.upper() == 'Y'):
+            cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
 
-        try:
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+            try:
+                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
-            if output:
-                print('[!] Updating...')
-                printc('[+] Update successful.', GREEN)
-                print('[!] Exiting now. Launch CTF Enum again to load the new verison.')
-                print('[!] BYE!!!')
-                sys.exit(0)
-        except Exception as e:
-            printc(f'[-] {e}', RED)
+                if output:
+                    print('[!] Updating...')
+                    printc('[+] Update successful.', GREEN)
+                    print('[!] Exiting now. Launch CTF Enum again to load the new verison.')
+                    print('[!] BYE!!!')
+                    sys.exit(0)
+            except Exception as e:
+                printc(f'[-] {e}', RED)
