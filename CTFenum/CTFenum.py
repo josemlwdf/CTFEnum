@@ -63,7 +63,7 @@ def main():
         mod_dns.dns_add_subdomains(ip, register_dns)
 
     # TCP
-    for port in tcp_ports.reverse():
+    for port in tcp_ports:
             # FTP
         if port == '21':
             process = multiprocessing.Process(target=mod_ftp.handle_ftp, args=(ip, port, nmap_detail))
@@ -73,7 +73,7 @@ def main():
             print_banner(port)
             print('[!] SSH')
             print('[!] You can try to bruteforce credentials using [netexec|crackmapexec|hydra].')
-            print("netexec ssh $(IP) -u usernames.txt -p passwords.txt | grep -v fail")
+            print("netexec ssh $(IP) -u usernames.txt -p passwords.txt | grep -E '\[\+\]|\[\*\]'")
             # TELNET
         elif port == '23': 
             process = multiprocessing.Process(target=mod_telnet.handle_telnet, args=(ip,))

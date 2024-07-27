@@ -9,17 +9,17 @@ domain = '.'
 credentials = []
 
 
-def export_wordlists():
+def export_wordlists(_smb_users, _smb_paswords):
     with open('smb_users.txt', 'w') as file:
-        file.write('\n'.join(smb_users))
+        file.write('\n'.join(_smb_users))
         file.close()
         ulist = 'common'
-        if ('it' not in smb_users):
+        if ('it' not in _smb_users):
             ulist = 'founded'
         printc(f'[+] Exported {ulist} users list to smb_users.txt', GREEN)
     
     with open('smb_pass.txt', 'w') as file:
-        file.write('\n'.join(smb_passwords))
+        file.write('\n'.join(_smb_paswords))
         file.close()
 
 
@@ -119,7 +119,7 @@ def handle_smb(target, port):
     if len_default_users == len(smb_users):
         rid_cycling(target)
 
-    export_wordlists()
+    export_wordlists(smb_users, smb_passwords)
     # BRUTEFORCE LOGIN
     bruteforce(target, port)
 

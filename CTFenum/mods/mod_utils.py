@@ -147,14 +147,20 @@ def check_version():
 """
     printc(banner, GREEN)
 
+    current_version = '1.0.0'
+    
     with open('/opt/CTFEnum/CTFenum/mods/version', 'r') as file:
         current_version = file.read()
         print('[!] Version: ', end='')
         printc(current_version, GREEN)
         current_version = current_version.replace('.', '')
-
+    
     online_version_url = 'https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/CTFenum/mods/version'
-    response = requests.get(online_version_url)
+    online_version = current_version
+    try:
+        response = requests.get(online_version_url)
+    except:
+        pass
     if response:
         formatted_online_version = response.text
         online_version = formatted_online_version.replace('.', '')
