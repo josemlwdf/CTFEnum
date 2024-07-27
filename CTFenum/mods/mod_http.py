@@ -216,7 +216,7 @@ def get_domain(url):
 def call_ferox(filename, ip, port, proto='http', checkdns=True, silent=True):
     global urls_founded
     global server
-
+    
     base_url = update_url(ip, port)
     cmd_printed = False
     if silent:
@@ -272,9 +272,9 @@ def call_ferox(filename, ip, port, proto='http', checkdns=True, silent=True):
             else:
                 if not cmd_printed: print(f'[!] {cmd}\n'); cmd_printed = True
                 line = line.strip()
-                urls_founded.append(line)
-
-                print(line)
+                if line not in urls_founded:
+                    urls_founded.append(line)
+                    print(line)
         process.kill()
 
     except Exception as e:
