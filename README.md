@@ -9,13 +9,14 @@ Utilizes modular design with specific handlers for different services (e.g., FTP
 Provides recommendations and potential actions for specific ports (e.g., brute force attempts, service-specific commands).
 
 ## Requirements
-``Python 3.x
-Nmap
-Gobuster
-Dig
-Crackmapexec
-Metasploit
-Required Python libraries: subprocess, multiprocessing, sys, re, etc...``
+    Python 3.x
+    Nmap
+    Gobuster
+    Dig
+    Crackmapexec
+    Metasploit
+    etc...
+    Required Python libraries: subprocess, multiprocessing, sys, re, etc...
 
 ## Installation
     curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash
