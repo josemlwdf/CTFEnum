@@ -42,7 +42,7 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 #### NMAP Scan
 - Automatic nmap ports detection + Nmap port details Scan.
 
-  ![image](https://github.com/user-attachments/assets/da03d1b5-7a5e-455a-8219-c279a43b6674)
+![image](https://github.com/user-attachments/assets/da03d1b5-7a5e-455a-8219-c279a43b6674)
   
 - Scraps for DNS from Nmpa Scan.
 
