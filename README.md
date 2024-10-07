@@ -33,6 +33,8 @@ If installed with install.sh:
 
 Replace <IP_ADDRESS> with the target IP address you intend to scan.
 
+![image](https://github.com/user-attachments/assets/8cc9aae0-0888-453f-b731-4b0f174c90ae)
+
 The program will perform a comprehensive port scan using Nmap to identify open TCP and UDP ports on the specified IP address.
 
 CTFEnum will then initiate module-specific handlers based on identified open ports to analyze and potentially exploit services running on these ports.
