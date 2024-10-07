@@ -41,6 +41,9 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### NMAP Scan
 - Automatic nmap ports detection + Nmap port details Scan.
+
+  ![image](https://github.com/user-attachments/assets/da03d1b5-7a5e-455a-8219-c279a43b6674)
+  
 - Scraps for DNS from Nmpa Scan.
 
 #### FTP 
@@ -50,6 +53,8 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### SSH
 - Suggests SSH credentials bruteforce.
+
+![image](https://github.com/user-attachments/assets/e41add59-55f3-4489-9008-7875981f3d50)
 
 #### TELNET
 - Retrieve Nmap information using this service specific scripts.
@@ -63,8 +68,14 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 #### HTTP
 - Identify server and possible common technologies.
 - Crawl and bruteforce locations using feroxbuster.
+
+![image](https://github.com/user-attachments/assets/19d75ed8-6292-4385-8a7f-46f435c3d75e)
+  
 - Detects VHOSTS and add them automatically to /etc/hosts file.
 - Extract comments from the founded URLs.
+
+![image](https://github.com/user-attachments/assets/7595168c-5909-4d9d-b411-8aef7e1d7b78)
+  
 - Test automatically for Apache Server CVEs if the version matches.
 
 #### KERBEROS
