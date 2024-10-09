@@ -98,11 +98,20 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### SMB
 - RID Cycling usernames enumeration Attack as Guest.
+
+![image](https://github.com/user-attachments/assets/7b734676-1de8-428e-92f9-896fba16adae)
+  
 - RID Cycling usernames enumeration Attack with founded credentials.
 - Bruteforce using common users and passwords.
 - Bruteforce using founded users.
+
+![image](https://github.com/user-attachments/assets/16f7fb59-e5c0-4e00-9569-05a6ddd7b3dd)
+  
 - Bruteforce using options NULL pass, User as Pass and common passwords.
 - Shares enumeration using NULL creds, Guest and founded credentials.
+
+![image](https://github.com/user-attachments/assets/269e3c46-3330-45db-8d16-eacbad837f42)
+
 
 #### TFTP
 - Check if TFTP server allow PUT files.
