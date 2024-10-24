@@ -33,6 +33,8 @@ If installed with install.sh:
 
 Replace <IP_ADDRESS> with the target IP address you intend to scan.
 
+![image](https://github.com/user-attachments/assets/8cc9aae0-0888-453f-b731-4b0f174c90ae)
+
 The program will perform a comprehensive port scan using Nmap to identify open TCP and UDP ports on the specified IP address.
 
 CTFEnum will then initiate module-specific handlers based on identified open ports to analyze and potentially exploit services running on these ports.
@@ -41,6 +43,9 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### NMAP Scan
 - Automatic nmap ports detection + Nmap port details Scan.
+
+![image](https://github.com/user-attachments/assets/da03d1b5-7a5e-455a-8219-c279a43b6674)
+  
 - Scraps for DNS from Nmpa Scan.
 
 #### FTP 
@@ -50,6 +55,8 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### SSH
 - Suggests SSH credentials bruteforce.
+
+![image](https://github.com/user-attachments/assets/e41add59-55f3-4489-9008-7875981f3d50)
 
 #### TELNET
 - Retrieve Nmap information using this service specific scripts.
@@ -63,8 +70,14 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 #### HTTP
 - Identify server and possible common technologies.
 - Crawl and bruteforce locations using feroxbuster.
+
+![image](https://github.com/user-attachments/assets/19d75ed8-6292-4385-8a7f-46f435c3d75e)
+  
 - Detects VHOSTS and add them automatically to /etc/hosts file.
 - Extract comments from the founded URLs.
+
+![image](https://github.com/user-attachments/assets/7595168c-5909-4d9d-b411-8aef7e1d7b78)
+  
 - Test automatically for Apache Server CVEs if the version matches.
 
 #### KERBEROS
@@ -85,11 +98,20 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### SMB
 - RID Cycling usernames enumeration Attack as Guest.
+
+![image](https://github.com/user-attachments/assets/7b734676-1de8-428e-92f9-896fba16adae)
+  
 - RID Cycling usernames enumeration Attack with founded credentials.
 - Bruteforce using common users and passwords.
 - Bruteforce using founded users.
+
+![image](https://github.com/user-attachments/assets/16f7fb59-e5c0-4e00-9569-05a6ddd7b3dd)
+  
 - Bruteforce using options NULL pass, User as Pass and common passwords.
 - Shares enumeration using NULL creds, Guest and founded credentials.
+
+![image](https://github.com/user-attachments/assets/269e3c46-3330-45db-8d16-eacbad837f42)
+
 
 #### TFTP
 - Check if TFTP server allow PUT files.
