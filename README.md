@@ -53,6 +53,8 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 - Bruteforce using common users and passwords.
 - List directories.
 
+![image](https://github.com/user-attachments/assets/6e943af3-3497-410a-a787-edbc8a2ef8ef)
+
 #### SSH
 - Suggests SSH credentials bruteforce.
 
