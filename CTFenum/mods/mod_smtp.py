@@ -8,7 +8,7 @@ def handle_smtp(ip):
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
         if output:
-            result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))[0]    
+            result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))[0]    
             if result:
                 print_banner('25')
                 print('[!] SMTP')

@@ -185,9 +185,9 @@ def http_extract_comments(response):
 
     global comments_founded
     body = str(response.text)
-    results_html = re.findall('(<!--.*-->)', body)
-    results_version = re.findall('.*"(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})".*\n', body)
-    results_version_two = re.findall('.*>(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})<.*\n', body)
+    results_html = re.findall(r'(<!--.*-->)', body)
+    results_version = re.findall(r'.*"(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})".*\n', body)
+    results_version_two = re.findall(r'.*>(.{1,40}\d{1,1}\.\d{1,2}\.\d{0,2}.{1,40})<.*\n', body)
     comments_founded += results_html 
     comments_founded += results_version 
     comments_founded += results_version_two

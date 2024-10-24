@@ -31,7 +31,7 @@ def main():
         arg_error()
     else:
         arg = sys.argv[1]
-        res = re.findall('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', arg)
+        res = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', arg)
         if not res:
             arg_error()
 

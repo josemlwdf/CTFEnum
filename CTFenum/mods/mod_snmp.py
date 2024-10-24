@@ -14,7 +14,7 @@ def snmp_get_community(ip):
             print_banner('161')
             print('[!] SNMP')
             print(f'[!] {cmd}')
-            community_array = re.findall('Login Successful: (.*) \(Access?', output)
+            community_array = re.findall(r'Login Successful: (.*) \(Access?', output)
             if community_array:
                 community = community_array[0]
                 printc(f'[+] Community password: {community}', GREEN)
@@ -36,7 +36,7 @@ def snmp_enum(ip):
             print_banner('161')
             print('[!] SNMP')
             print(f'[!] {cmd}')
-            result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+            result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
             if result:
                 print(result[0].replace('@n@', '\n').replace('\n\n', ''))
     except:

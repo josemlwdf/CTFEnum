@@ -46,29 +46,29 @@ def scan_for_dns(nmap_detail):
 
     for line in detail:
         if 'Domain:' in line:
-            results = re.findall('Domain: (.+)0\.', line)
+            results = re.findall(r'Domain: (.+)0\.', line)
             if results:
                 parts = results[0].split('.')
                 if len(parts) > 1:
                     dns = f'{parts[-2]}.{parts[-1]}'.strip()
                     return dns
         elif 'DNS:' in line:
-            results = re.findall('DNS:.+\.(.+\..+)', line)
+            results = re.findall(r'DNS:.+\.(.+\..+)', line)
             if results:
                 dns = results[0].strip()
                 return dns
         elif 'DNS_Domain_Name' in line:
-            results = re.findall('DNS_Domain_Name: (.*)\n', line)
+            results = re.findall(r'DNS_Domain_Name: (.*)\n', line)
             if results:
                 dns = results[0].strip()
                 return dns
         elif 'DNS_Tree_Name' in line:
-            results = re.findall('DNS_Tree_Name: (.*)\n', line)
+            results = re.findall(r'DNS_Tree_Name: (.*)\n', line)
             if results:
                 dns = results[0].strip()
                 return dns
         elif ('ssl-cert' in line) and ('commonName' in line):
-            results = re.findall('commonName=(.*)\n', line)
+            results = re.findall(r'commonName=(.*)\n', line)
             if results:
                 parts = results[0].split('.')
                 if len(parts) > 1:

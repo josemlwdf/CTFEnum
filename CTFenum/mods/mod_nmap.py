@@ -11,7 +11,7 @@ def nmap_udp(ip, output_dict):
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
         ports = ''
 
-        result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+        result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
 
         if result:
             output = result[0].replace('@n@', '\n').replace('\n\n', '')
@@ -21,7 +21,7 @@ def nmap_udp(ip, output_dict):
             print(f'[!] {cmd}')
             print(output)
 
-            ports = re.findall('@n@([0-9]+)/', result[0])
+            ports = re.findall(r'@n@([0-9]+)/', result[0])
             ports = ','.join(ports)
 
             output_dict['nmap_udp_ports'] = ports
@@ -38,7 +38,7 @@ def nmap_tcp(ip, output_dict):
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)   
         ports = ''
 
-        result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+        result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
 
         if result:
             output = result[0].replace('@n@', '\n').replace('\n\n', '')
@@ -48,7 +48,7 @@ def nmap_tcp(ip, output_dict):
             print(f'[!] {cmd}')
             print(output)
 
-            ports = re.findall('@n@([0-9]+)/', result[0])
+            ports = re.findall(r'@n@([0-9]+)/', result[0])
             ports = ','.join(ports)
         
             output_dict['nmap_tcp_ports'] = ports
@@ -78,7 +78,7 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
     try:
         output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
     
-        result = re.findall('@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
+        result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
 
         if result:
             output = result[0].replace('@n@', '\n').replace('\n\n', '')

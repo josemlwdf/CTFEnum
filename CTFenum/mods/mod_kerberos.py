@@ -86,9 +86,9 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
             print(f'[!] {cmd}')
             printc(f'[+] Some Kerberoastable users where found with the credentials "{user}:{passw}"', GREEN)
             for line in output.splitlines():
-                passw_last_set = re.findall('....-..-..\s.*:.*:.*\.', line)
+                passw_last_set = re.findall(r'....-..-..\s.*:.*:.*\.', line)
                 if passw_last_set:
-                    re_user = re.findall('.+\s(\w+)\s', line)
+                    re_user = re.findall(r'.+\s(\w+)\s', line)
                     if re_user: 
                         kerberoastable_user = re_user[0]
                         printc(f'[+] {kerberoastable_user}', BLUE)

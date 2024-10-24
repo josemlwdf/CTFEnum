@@ -28,7 +28,7 @@ def finger_user(ip, username):
 
         # Receive and print the response
         response = sock.recv(4096).decode()
-        username = re.findall('Login:(.*)Name:', response)
+        username = re.findall(r'Login:(.*)Name:', response)
         if username:
             clean_username = username[0].strip()
             
@@ -38,7 +38,7 @@ def finger_user(ip, username):
                 founded.append(clean_username)
                 fullname = ''
                 try:
-                    full_name = re.findall('Name:(.*)\n', response)
+                    full_name = re.findall(r'Name:(.*)\n', response)
                 except:
                     pass
                 finger_banner(clean_username, full_name[0])

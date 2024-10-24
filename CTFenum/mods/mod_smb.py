@@ -56,10 +56,10 @@ def rid_cycling_parse(output, cmd):
 
     for line in output.splitlines():
         if ('DOMAIN' in line) and ('LOCAL' in line) and (domain == '.'):
-            domain = re.findall('LOCAL.*DOMAIN\((.*) -', line)[0]
+            domain = re.findall(r'LOCAL.*DOMAIN\((.*) -', line)[0]
             printc(f'[+] Domain: {domain}', BLUE)
         if ('USER' in line):
-            user = re.findall('USER=(.*)\sRID', line)[0]
+            user = re.findall(r'USER=(.*)\sRID', line)[0]
             printc(f'[+] {user}', BLUE)
             temp_users.append(user)
     if len(temp_users) > 0:
