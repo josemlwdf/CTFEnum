@@ -73,7 +73,7 @@ def main():
             print_banner(port)
             print('[!] SSH')
             print('[!] You can try to bruteforce credentials using [netexec|crackmapexec|hydra].')
-            print("netexec ssh $(IP) -u usernames.txt -p passwords.txt | grep -E '\[\+\]|\[\*\]'")
+            print('netexec ssh $(IP) -u usernames.txt -p passwords.txt')
             # TELNET
         elif port == '23': 
             process = multiprocessing.Process(target=mod_telnet.handle_telnet, args=(ip,))

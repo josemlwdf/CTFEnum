@@ -83,7 +83,7 @@ def bruteforce(target, port):
             printc('[+] Creds Found!!!', GREEN)
             print('')
             for line in output.splitlines():
-                creds = re.findall("Success:\s\'(.*)\'", line)
+                creds = re.findall(r"Success:\s\'(.*)\'", line)
                 if creds:
                     creds = creds[0].split('\\')[1]
                     if (creds.split(':')[1] == ''): continue
