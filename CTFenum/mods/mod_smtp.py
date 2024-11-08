@@ -14,5 +14,7 @@ def handle_smtp(ip):
                 print('[!] SMTP')
                 print(f'[!] {cmd}')
                 print(result)
+
+                log(output, cmd, ip, 'nmap')
     except:
         return

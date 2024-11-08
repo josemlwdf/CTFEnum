@@ -42,6 +42,8 @@ def finger_user(ip, username):
                 except:
                     pass
                 finger_banner(clean_username, full_name[0])
+
+                log(username, '', ip, 'finger')
     except:
         pass
     finally:

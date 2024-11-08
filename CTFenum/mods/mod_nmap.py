@@ -2,6 +2,7 @@ import subprocess
 import re
 from mods.mod_utils import *
 
+debug = False
 
 def nmap_udp(ip, output_dict):
     cmd = f'nmap -F -T4 -sU -Pn --max-parallelism 512 --min-rtt-timeout 50ms --max-retries 1 -n --open {ip}'
@@ -21,6 +22,8 @@ def nmap_udp(ip, output_dict):
             print(f'[!] {cmd}')
             print(output)
 
+            log(output, cmd, ip, 'nmap')
+
             ports = re.findall(r'@n@([0-9]+)/', result[0])
             ports = ','.join(ports)
 
@@ -35,9 +38,14 @@ def nmap_tcp(ip, output_dict):
     output = ''
 
     try:
-        output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)   
-        ports = ''
+        if not debug:
+            output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)   
+        else:
+            with open('nmap.txt') as file:
+                output = file.read()
 
+        ports = ''
+        
         result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
 
         if result:
@@ -48,11 +56,14 @@ def nmap_tcp(ip, output_dict):
             print(f'[!] {cmd}')
             print(output)
 
+            log(output, cmd, ip, 'nmap')
+
             ports = re.findall(r'@n@([0-9]+)/', result[0])
             ports = ','.join(ports)
         
             output_dict['nmap_tcp_ports'] = ports
-    except:
+    except Exception as e:
+        #print(e)
         pass    
     return output_dict
 
@@ -76,7 +87,11 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
     cmd = f'nmap -T5 -n -Pn -sCV -p{ports} {ip}'
 
     try:
-        output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
+        if not debug:
+            output = subprocess.check_output(cmd.split(' '), stderr=subprocess.STDOUT, universal_newlines=True)
+        else:
+            with open('nmap2.txt') as file:
+                output = file.read()
     
         result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
 
@@ -87,6 +102,8 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
             print('NMAP TCP OUTPUT:')
             print(f'[!] {cmd}')
             print(output)
+
+            log(output, cmd, ip, 'nmap')
 
         output_dict['nmap_detailed'] = output
     except:
@@ -102,7 +119,8 @@ def nmap(ip):
 
     # Start processes to execute the nmap commands
     output_dict = nmap_tcp(ip, output_dict)   
-    output_dict = nmap_udp(ip, output_dict)
+    if not debug:
+        output_dict = nmap_udp(ip, output_dict)
 
     print_separator()
     print('[!] Generating Nmap output')
@@ -112,6 +130,7 @@ def nmap(ip):
     if tcp_ports:
         output_dict = nmap_detailed_tcp_scan(ip, tcp_ports, output_dict)
 
-    #udp_ports = output_dict.get('nmap_udp_ports', '')
+    if not debug:
+        udp_ports = output_dict.get('nmap_udp_ports', '')
 
     return output_dict

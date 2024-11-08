@@ -13,5 +13,7 @@ def handle_tftp(ip):
             print('[!] TFTP')
             printc('[+] TFTP server allows PUT files.', GREEN)
             print('[!] You can also try to bruteforce filenames to download.')
+
+            log(output, cmd, ip, 'msfconsole')
     except:
         return

@@ -27,6 +27,8 @@ def main():
 
     arg = ''
 
+    procs = []
+
     if len(sys.argv) != 2:
         arg_error()
     else:
@@ -52,12 +54,10 @@ def main():
 
     nmap_detail = output_dict.get('nmap_detailed', '')
 
-    procs = []
-
     dns = scan_for_dns(nmap_detail)
     hostname = scan_hostname(nmap_detail)
 
-    if dns:
+    if dns or hostname:
         clean_hosts(ip, dns)
         register_dns = [dns]
         if hostname:
@@ -69,8 +69,7 @@ def main():
     for port in tcp_ports:
             # FTP
         if port == '21':
-            process = multiprocessing.Process(target=mod_ftp.handle_ftp, args=(ip, port, nmap_detail))
-            procs.append(process)
+            mod_ftp.handle_ftp(ip, port, nmap_detail)
             # SSH
         elif (port == '22') or (port == '2222'):
             print_banner(port)
@@ -79,24 +78,19 @@ def main():
             print('netexec ssh $(IP) -u usernames.txt -p passwords.txt')
             # TELNET
         elif port == '23': 
-            process = multiprocessing.Process(target=mod_telnet.handle_telnet, args=(ip,))
-            procs.append(process)
+            mod_telnet.handle_telnet(ip)
             # SMTP
         elif port == '25':
-            process = multiprocessing.Process(target=mod_smtp.handle_smtp, args=(ip,))
-            procs.append(process)
+            mod_smtp.handle_smtp(ip)
             # FINGER
         elif port == '79':
-            process = multiprocessing.Process(target=mod_finger.handle_finger, args=(ip,))
-            procs.append(process)
+            target=mod_finger.handle_finger(ip)
             # HTTP
         elif (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443') or (port == '10443'):
-            process = multiprocessing.Process(target=mod_http.handle_http, args=(ip, port))
-            procs.append(process)
+            mod_http.handle_http(ip, port)
             # KERBEROS
         elif port == '88':
-            process = multiprocessing.Process(target=mod_kerberos.handle_kerberos, args=(ip, dns))
-            procs.append(process)
+           mod_kerberos.handle_kerberos(ip, dns)
             # POP
         elif (port == '110') or (port == '995'):
             print_banner(port)
@@ -110,12 +104,10 @@ def main():
             print('[!] Reference: https://book.hacktricks.xyz/network-services-pentesting/pentesting-rpcbind')
             # IMAP
         elif (port == '143') or (port == '993'):
-            process = multiprocessing.Process(target=mod_imap.handle_imap, args=(ip, port))
-            procs.append(process)
+            mod_imap.handle_imap(ip, port)
             # SMB
         elif (port == '445'):
-            process = multiprocessing.Process(target=mod_smb.handle_smb, args=(ip, port))
-            procs.append(process)
+            mod_smb.handle_smb(ip, port)
 
     # UDP
     for port in udp_ports:

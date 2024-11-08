@@ -10,15 +10,17 @@ def snmp_get_community(ip):
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
-        if output:
-            print_banner('161')
-            print('[!] SNMP')
-            print(f'[!] {cmd}')
+        if output:            
             community_array = re.findall(r'Login Successful: (.*) \(Access?', output)
             if community_array:
                 community = community_array[0]
+                print_banner('161')
+                print('[!] SNMP')
+                print(f'[!] {cmd}')
                 printc(f'[+] Community password: {community}', GREEN)
-            print(output)
+                print(output)
+
+                log(output, cmd, ip, 'msfconsole')
     except:
         pass
 
@@ -39,6 +41,8 @@ def snmp_enum(ip):
             result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))
             if result:
                 print(result[0].replace('@n@', '\n').replace('\n\n', ''))
+
+                log(output, cmd, ip, 'nmap')
     except:
         return
 
@@ -64,6 +68,8 @@ def snmp_get_strings(ip, community):
                     print('[!] SNMP')
                     print(f'[!] {cmd}')
                     print(output)
+
+                    log(output, cmd, ip, 'snmpwalk')
             except:
                 return
     

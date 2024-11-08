@@ -28,6 +28,8 @@ def ftp_connect(server, port, username, password):
         print_banner(port)
         printc(f'[+] FTP Credentials "{username}:{password}"', BLUE)
 
+        log(f'[+] FTP Credentials "{username}:{password}"', '', server, 'ftp')
+
         # Perform operations (e.g., list directories, download/upload files) if needed
         # Example: List directories
         printc('[!] Listing FTP root', YELLOW)

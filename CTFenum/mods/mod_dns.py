@@ -83,7 +83,10 @@ def handle_dns(ip, dns=None):
                         dns_add_subdomains(ip, subdomains)
                         dns_print_banner()
                         print(f'[!] {cmd_dns}')
-                        printc('\n'.join(subdomains), GREEN)
+                        data = '\n'.join(subdomains)
+                        printc(data, GREEN)
+
+                        log(data, cmd_dns, ip, 'dig')
                     except:
                         return
     except:

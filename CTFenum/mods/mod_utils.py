@@ -3,6 +3,7 @@ import re
 import requests
 import subprocess
 import sys
+from os import system
 
 # Initialize colorama
 init()
@@ -18,6 +19,8 @@ WHITE = 'WHITE'
 
 max_subprocess = 200
 
+logs_folder = 'ctfenum_logs'
+system(f'mkdir {logs_folder} 2>/dev/null')
 
 def printc(text, color=None, back_color=None):
     if color is not None:
@@ -81,7 +84,7 @@ def scan_hostname(nmap_detail):
 
     for line in detail:
         if 'Host:' in line:
-            results = re.findall(r'Host: (.+);', line)
+            results = re.findall(r'Host: (.+?);', line)
             if results:
                 host = results[0].strip()
                 return host
@@ -189,23 +192,15 @@ def check_version():
         printc('[*] A New version of CTF Enum is available.', GREEN)
         print('[!] GitHub version is: ', end='')
         printc(formatted_online_version, YELLOW, RED)
-
-        answer = ''
-
-        while (answer == ''):
-            answer = input('Would you line to update now Y/N: ')
         
-        if (answer.upper() == 'Y'):
-            cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
+        cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
+        print(f'[!] {cmd}')
+        printc(f'[-] Update as soon as possible.', RED)
+        print_separator()
 
-            try:
-                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
-
-                if output:
-                    print('[!] Updating...')
-                    printc('[+] Update successful.', GREEN)
-                    print('[!] Exiting now. Launch CTF Enum again to load the new verison.')
-                    print('[!] BYE!!!')
-                    sys.exit(0)
-            except Exception as e:
-                printc(f'[-] {e}', RED)
+def log(data, cmd, target='', tool='ctfenum'):
+    thislog_path = f'{logs_folder}/{target.replace(".", "-")}'
+    dir_cmd = f'mkdir -p {thislog_path} 2>/dev/null'
+    system(dir_cmd)
+    with open(f'./{thislog_path}/{tool}.txt', 'a') as file:
+        file.write('*' * 20 + '\n' + cmd + '\n\n' + data + '\n')

@@ -15,5 +15,7 @@ def handle_telnet(ip):
                 print('[!] TELNET')
                 print(f'[!] {cmd}')
                 print(result)
+
+                log(output, cmd, ip, 'nmap')
     except:
         return

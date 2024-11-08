@@ -80,6 +80,8 @@ def register_subdomains(subdomains, ip='127.0.0.1', cmd=None):
         printc('[+] Some subdomains have been found:', GREEN)
         for subdomain in subdomains:
             printc(f'[+] {subdomain}', BLUE)
+
+            log(subdomain, '', ip)
         try: 
             mod_dns.dns_add_subdomains(ip, subdomains)
             printc('[+] Domain added correctly to /etc/hosts', GREEN)
@@ -157,6 +159,7 @@ def http_identify_server(host, port, proto='http'):
         print('[!] Possible Technologies')
         for technology in tech:
             printc(f'[+] {technology}', BLUE)
+        log('\n'.join(tech), '', host)
 
 
 def make_request(base_url):
@@ -240,6 +243,8 @@ def call_ferox(filename, ip, port, proto='http', checkdns=True, silent=True):
                 silent = False
                 call_ferox(filename, ip, port, proto, checkdns, silent)
                 cmd_printed =True
+
+                log('', cmd, ip, 'feroxbuster')
                 break
             # When feroxbuster is called withour --silent parameter
             # we captures this error to extract the domain where
@@ -275,6 +280,8 @@ def call_ferox(filename, ip, port, proto='http', checkdns=True, silent=True):
                 if line not in urls_founded:
                     urls_founded.append(line)
                     print(line)
+
+                    log(line, '', ip, 'feroxbuster')
         process.kill()
 
     except Exception as e:
@@ -294,6 +301,7 @@ def http_fuzz_subdomains(port):
     except:
         return
     if output:
+        log(output, cmd, domain, 'gobuster')
         results = output.splitlines()
         subdomains = []
         for line in results:
@@ -333,7 +341,10 @@ def handle_http(ip, port):
     # PRINT COMMENTS
     if len(comments_founded) > 0:
         print(f'[!] Comments found:')
-        printc('\n'.join(list(set(comments_founded))), GREEN)
+        data = '\n'.join(list(set(comments_founded)))
+        printc(data, GREEN)
+
+        log(data, '', ip)
     # FUZZ SUBDOMAINS
     if (domain != ''):
         http_fuzz_subdomains(port)
