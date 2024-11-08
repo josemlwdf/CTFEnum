@@ -128,7 +128,7 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
 
 
 def check_smb_credentials(target, domain):
-    print('checking smb credentials file')
+    #print('checking smb credentials file')
     # Check credentials founded on SMB first:
     if os.path.exists('smb_credentials.txt'):
         with open('smb_credentials.txt', 'r') as file:
@@ -140,9 +140,9 @@ def check_smb_credentials(target, domain):
                 break
         if not cred: return
         user, passwd = cred.split(':')[:2]
-        print('check kerberoast with creds')
+        #print('check kerberoast with creds')
         check_kerberoast(target, domain, user, passwd)
-        print('check asreproast with creds')
+        #print('check asreproast with creds')
         check_asreproast(target, domain, user, passwd)
         return True
     return False

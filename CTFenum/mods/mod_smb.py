@@ -11,7 +11,7 @@ credentials = []
 
 def export_wordlists(_smb_users, _smb_paswords):
     with open('smb_users.txt', 'a') as file:
-        file.write('\n'.join(_smb_users))
+        file.write('\n' + '\n'.join(_smb_users))
         file.close()
         ulist = 'common'
         if ('it' not in _smb_users):
@@ -89,7 +89,8 @@ def bruteforce(target, port):
                     if (creds.split(':')[1] == ''): continue
                     printc(f'[+] {creds}', BLUE)
                     credentials.append(creds)
-    export_credentials()
+    if credentials:
+        export_credentials()
 
 
 def enumerate_shares(target, user='Guest', passw='', domain='.'):
