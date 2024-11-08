@@ -87,6 +87,7 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 - Kerberoast Automatic ticket Extraction.
 - Kerberos Atuomatic Synchronization with DC.
 - Automatic Ticket Cracking (Optional).
+![image](https://github.com/user-attachments/assets/4942ebbb-e9fc-40dc-9ee7-b759fadeb8df)
 
 #### POP
 - Suggests POP credentials bruteforce.
