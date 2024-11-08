@@ -135,7 +135,7 @@ def check_smb_credentials(target, domain):
             credentials = file.readlines()
         cred = ''
         for item in credentials:
-            if ('Guest' not in item):
+            if ('Guest' not in item) and (':' in item):
                 cred = item
                 break
         user, passwd = cred.split(':')[:2]
