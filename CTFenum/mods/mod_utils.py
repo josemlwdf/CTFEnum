@@ -76,6 +76,26 @@ def scan_for_dns(nmap_detail):
                     return dns
     return ''
 
+def scan_hostname(nmap_detail):
+    detail = nmap_detail.splitlines()
+
+    for line in detail:
+        if 'Host:' in line:
+            results = re.findall(r'Host: (.+);', line)
+            if results:
+                host = results[0].strip()
+                return host
+        elif 'NetBIOS:' in line:
+            results = re.findall(r'NetBIOS name: (.+),', line)
+            if results:
+                host = results[0].strip()
+                return host
+        elif 'NetBIOS_Computer_Name' in line:
+            results = re.findall(r'NetBIOS_Computer_Name: (.*)\n', line)
+            if results:
+                host = results[0].strip()
+                return host
+    return ''
 
 def clean_hosts(ip, subdomain=None):
     with open('/etc/hosts', 'r') as file:

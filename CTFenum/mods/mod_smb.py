@@ -4,19 +4,24 @@ from mods.mod_utils import *
 import os
 
 smb_users = ["admin","user","manager","supervisor","administrator","test","operator","backup","lab","demo","smb"]
+original_users_len = len(smb_users)
 smb_passwords = ["password","admin","administrator","backup","test","lab","demo"]
 domain = '.'
 credentials = []
 
 
 def export_wordlists(_smb_users, _smb_paswords):
+    global smb_users
+    if os.path.exists('smb_users.txt'):
+        with open('smb_users.txt', 'r') as file:
+            smb_users += file.readlines()
+            smb_users = list(set(smb_users))
+
     with open('smb_users.txt', 'a') as file:
-        file.write('\n' + '\n'.join(_smb_users))
+        file.write('\n'.join(_smb_users))
         file.close()
-        ulist = 'common'
-        if ('it' not in _smb_users):
-            ulist = 'founded'
-        printc(f'[+] Exported {ulist} users list to smb_users.txt', GREEN)
+        if (original_users_len != len(_smb_users)):
+            print(f'[!] Exported founded users list to smb_users.txt')
     
     with open('smb_pass.txt', 'a') as file:
         file.write('\n'.join(_smb_paswords))
@@ -24,7 +29,7 @@ def export_wordlists(_smb_users, _smb_paswords):
 
 
 def export_credentials():
-    with open('smb_credentials.txt', 'a') as file:
+    with open('smb_credentials.txt', 'w') as file:
         file.write('\n'.join(credentials))
         file.close()
         printc('[+] Credentials stored in smb_credentials.txt', GREEN)
@@ -63,7 +68,7 @@ def rid_cycling_parse(output, cmd):
             printc(f'[+] {user}', BLUE)
             temp_users.append(user)
     if len(temp_users) > 0:
-        smb_users = temp_users
+        smb_users += temp_users
 
 
 def bruteforce(target, port):
@@ -112,19 +117,17 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
 
 
 def handle_smb(target, port):
-    len_default_users = len(smb_users)
-
     # RID CYCLING AS NULL
     rid_cycling(target, user='')
     # RID CYCLING AS GUEST
-    if len_default_users == len(smb_users):
+    if original_users_len == len(smb_users):
         rid_cycling(target)
 
     export_wordlists(smb_users, smb_passwords)
     # BRUTEFORCE LOGIN
     bruteforce(target, port)
 
-    if (len_default_users == len(smb_users)) and (len(credentials)>0):
+    if (original_users_len == len(smb_users)) and (len(credentials)>0):
         for item in credentials:
             cred = ''
             if ('Guest' not in item) and (':' in item):
@@ -144,10 +147,11 @@ def handle_smb(target, port):
             enumerate_shares(target, user, passw, domain)
 
     try:
-        if (len_default_users != len(smb_users)):
+        if (original_users_len != len(smb_users)):
             os.remove('smb_users.txt')
         os.remove('smb_pass.txt')
         if not credentials:
             os.remove('smb_credentials.txt')
     except Exception as e:
-        printc(f'[-] {e}', RED)
+        pass
+        #printc(f'[-] {e}', RED)
