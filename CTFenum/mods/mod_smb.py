@@ -10,7 +10,7 @@ credentials = []
 
 
 def export_wordlists(_smb_users, _smb_paswords):
-    with open('smb_users.txt', 'w') as file:
+    with open('smb_users.txt', 'a') as file:
         file.write('\n'.join(_smb_users))
         file.close()
         ulist = 'common'
@@ -18,13 +18,13 @@ def export_wordlists(_smb_users, _smb_paswords):
             ulist = 'founded'
         printc(f'[+] Exported {ulist} users list to smb_users.txt', GREEN)
     
-    with open('smb_pass.txt', 'w') as file:
+    with open('smb_pass.txt', 'a') as file:
         file.write('\n'.join(_smb_paswords))
         file.close()
 
 
 def export_credentials():
-    with open('smb_credentials.txt', 'w') as file:
+    with open('smb_credentials.txt', 'a') as file:
         file.write('\n'.join(credentials))
         file.close()
         printc('[+] Credentials stored in smb_credentials.txt', GREEN)
@@ -124,9 +124,12 @@ def handle_smb(target, port):
     bruteforce(target, port)
 
     if (len_default_users == len(smb_users)) and (len(credentials)>0):
-        for cred in credentials:
-            user, passw = cred.split(':')[:2]
-            rid_cycling(target, user, passw, domain)
+        for item in credentials:
+            cred = ''
+            if ('Guest' not in item) and (':' in item):
+                cred = item
+                user, passw = cred.split(':')[:2]
+                rid_cycling(target, user, passw, domain)
 
     # ENUMERATE SHARES
     # SHARES AS GUEST
@@ -140,6 +143,10 @@ def handle_smb(target, port):
             enumerate_shares(target, user, passw, domain)
 
     try:
+        if (len_default_users != len(smb_users)):
+            os.remove('smb_users.txt')
         os.remove('smb_pass.txt')
+        if not credentials:
+            os.remove('smb_credentials.txt')
     except Exception as e:
         printc(f'[-] {e}', RED)

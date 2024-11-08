@@ -138,6 +138,7 @@ def check_smb_credentials(target, domain):
             if ('Guest' not in item) and (':' in item):
                 cred = item
                 break
+        if not cred: return
         user, passwd = cred.split(':')[:2]
         print('check kerberoast with creds')
         check_kerberoast(target, domain, user, passwd)
