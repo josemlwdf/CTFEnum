@@ -84,9 +84,11 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### KERBEROS
 - Kerberos usenames enumeration.
+![image](https://github.com/user-attachments/assets/8ac15b1f-2c51-43c9-bd67-5476337092da)
+
 - Kerberoast Automatic ticket Extraction.
 - Kerberos Atuomatic Synchronization with DC.
-- Automatic Ticket Cracking (Optional).
+- Suggest Ticket Cracking.
 ![image](https://github.com/user-attachments/assets/4942ebbb-e9fc-40dc-9ee7-b759fadeb8df)
 
 #### POP
