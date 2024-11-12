@@ -75,6 +75,8 @@ def snmp_get_strings(ip, community):
     
 
 def handle_snmp(ip):
+    #printc('snmp', RED)
+    
     community = snmp_get_community(ip)
     snmp_enum(ip)
     snmp_get_strings(ip, community)

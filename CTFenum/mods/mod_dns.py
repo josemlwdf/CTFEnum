@@ -52,6 +52,8 @@ def dns_add_subdomains(ip, subdomains):
 
 
 def handle_dns(ip, dns=None):
+    #printc('dns', RED)
+    
     if not dns:
         dns_print_banner()
         printc('[-] None', RED)

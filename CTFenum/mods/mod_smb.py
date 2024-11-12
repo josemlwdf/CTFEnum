@@ -119,6 +119,8 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
 
 
 def handle_smb(target, port):
+    #printc('smb', RED)
+    
     if not os.path.exists('smb_credentials.txt'):
         # RID CYCLING AS NULL
         rid_cycling(target, user='')

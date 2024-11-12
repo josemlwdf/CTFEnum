@@ -73,6 +73,8 @@ def print_this_banner(port):
     ftp:>ls -la''')
 
 def handle_ftp(target, port, nmap_detail):
+    #printc('ftp', RED)
+    
     print_this_banner(port)
     if ('ftp-anon' in nmap_detail):
         printc('[+] Server have anonymous login enabled', GREEN)

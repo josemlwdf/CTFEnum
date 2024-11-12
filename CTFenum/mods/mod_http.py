@@ -321,6 +321,8 @@ def update_url(host, port, proto='http'):
 
 
 def handle_http(ip, port):
+    #printc('http', RED)
+    
     error_display_port = port 
 
     create_short_wordlist()

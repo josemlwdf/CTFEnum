@@ -112,6 +112,7 @@ def nmap_detailed_tcp_scan(ip, ports, output_dict):
 
 
 def nmap(ip):
+    #printc('nmap', RED)
     print_separator()
     print('[!] Checking open ports')
     # Get open ports on target

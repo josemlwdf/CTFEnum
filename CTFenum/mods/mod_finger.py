@@ -58,6 +58,7 @@ def finger_banner(username, full_name):
 
 
 def handle_finger(ip):
+    #printc('finger', RED)
     procs = []
     usernames = []
     filename = '/usr/share/seclists/Usernames/xato-net-10-million-usernames.txt'
