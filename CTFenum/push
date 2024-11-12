@@ -2,4 +2,4 @@ git add .
 echo "Commit Message"
 read commit
 git commit -m "$commit"
-git push -u origin main
+git push -u origin dev
