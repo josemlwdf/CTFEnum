@@ -43,7 +43,6 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### NMAP Scan
 - Automatic nmap ports detection + Nmap port details Scan.
-
 ![image](https://github.com/user-attachments/assets/da03d1b5-7a5e-455a-8219-c279a43b6674)
   
 - Scraps for DNS from Nmpa Scan.
@@ -52,12 +51,10 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 - Check for anonymous login.
 - Bruteforce using common users and passwords.
 - List directories.
-
 ![image](https://github.com/user-attachments/assets/6e943af3-3497-410a-a787-edbc8a2ef8ef)
 
 #### SSH
 - Suggests SSH credentials bruteforce.
-
 ![image](https://github.com/user-attachments/assets/e41add59-55f3-4489-9008-7875981f3d50)
 
 #### TELNET
@@ -72,21 +69,21 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 #### HTTP
 - Identify server and possible common technologies.
 - Crawl and bruteforce locations using feroxbuster.
-
 ![image](https://github.com/user-attachments/assets/19d75ed8-6292-4385-8a7f-46f435c3d75e)
   
 - Detects VHOSTS and add them automatically to /etc/hosts file.
 - Extract comments from the founded URLs.
-
 ![image](https://github.com/user-attachments/assets/7595168c-5909-4d9d-b411-8aef7e1d7b78)
   
 - Test automatically for Apache Server CVEs if the version matches.
 
 #### KERBEROS
 - Kerberos usenames enumeration.
+![image](https://github.com/user-attachments/assets/8ac15b1f-2c51-43c9-bd67-5476337092da)
+
 - Kerberoast Automatic ticket Extraction.
 - Kerberos Atuomatic Synchronization with DC.
-- Automatic Ticket Cracking (Optional).
+- Suggest Ticket Cracking.
 ![image](https://github.com/user-attachments/assets/4942ebbb-e9fc-40dc-9ee7-b759fadeb8df)
 
 #### POP
@@ -101,18 +98,15 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 
 #### SMB
 - RID Cycling usernames enumeration Attack as Guest.
-
 ![image](https://github.com/user-attachments/assets/7b734676-1de8-428e-92f9-896fba16adae)
   
 - RID Cycling usernames enumeration Attack with founded credentials.
 - Bruteforce using common users and passwords.
 - Bruteforce using founded users.
-
 ![image](https://github.com/user-attachments/assets/16f7fb59-e5c0-4e00-9569-05a6ddd7b3dd)
   
 - Bruteforce using options NULL pass, User as Pass and common passwords.
 - Shares enumeration using NULL creds, Guest and founded credentials.
-
 ![image](https://github.com/user-attachments/assets/269e3c46-3330-45db-8d16-eacbad837f42)
 
 
