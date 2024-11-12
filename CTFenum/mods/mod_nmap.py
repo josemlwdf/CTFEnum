@@ -2,7 +2,8 @@ import subprocess
 import re
 from mods.mod_utils import *
 
-debug = False
+# Add 2 new lines before and after the nmap outputs tot he debug files
+debug = True
 
 def nmap_udp(ip, output_dict):
     cmd = f'nmap -F -T4 -sU -Pn --max-parallelism 512 --min-rtt-timeout 50ms --max-retries 1 -n --open {ip}'
@@ -43,7 +44,6 @@ def nmap_tcp(ip, output_dict):
         else:
             with open('nmap.txt') as file:
                 output = file.read()
-
         ports = ''
         
         result = re.findall(r'@n@(PORT .+@n@@n@)', output.replace('\n', '@n@'))

