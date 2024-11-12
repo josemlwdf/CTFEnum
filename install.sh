@@ -67,6 +67,12 @@ if ! command_exists snmpwalk; then
     sudo apt install snmp -y;
 fi
 
+# Check and install ldapdomaindump
+if ! command_exists ldapdomaindump; then
+    echo "Installing ldapdomaindump..."
+    sudo pip3 install ldapdomaindump;
+fi
+
 # Clone CTFEnum repository and set up ctfenum command
 if [ ! -d "/opt/CTFEnum" ]; then
     echo "Cloning CTFEnum repository..."
