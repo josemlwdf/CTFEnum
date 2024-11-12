@@ -122,6 +122,12 @@ CTFEnum will then initiate module-specific handlers based on identified open por
 - Perform dig scan on DNS.
 - Automatic DNS registration on /etc/hosts file.
 
+#### IRC
+- Suggest Hacktrics page as reference.
+
+#### CHECKPOINT FIREWALL
+- Enumerates the hostname
+
 ## Notes
 
 ``The tool suggests actions for certain ports, such as potential brute force attempts or specific commands to execute.
