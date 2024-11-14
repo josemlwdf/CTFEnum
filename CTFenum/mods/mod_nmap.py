@@ -3,7 +3,7 @@ import re
 from mods.mod_utils import *
 
 # Add 2 new lines before and after the nmap outputs tot he debug files
-debug = True
+debug = False
 
 def nmap_udp(ip, output_dict):
     cmd = f'nmap -F -T4 -sU -Pn --max-parallelism 512 --min-rtt-timeout 50ms --max-retries 1 -n --open {ip}'
