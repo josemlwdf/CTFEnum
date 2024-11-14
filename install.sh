@@ -77,6 +77,7 @@ fi
 if [ ! -d "/opt/CTFEnum" ]; then
     echo "Cloning CTFEnum repository..."
     sudo git clone https://github.com/josemlwdf/CTFEnum /opt/CTFEnum
+    git config --global --add safe.directory /opt/CTFEnum
 fi
 
 # Create ctfenum command
