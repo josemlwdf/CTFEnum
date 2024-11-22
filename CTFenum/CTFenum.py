@@ -81,9 +81,6 @@ def main():
             # TELNET
         elif port == '23': 
             mod_telnet.handle_telnet(ip)
-            # SMTP
-        elif port == '25':
-            mod_smtp.handle_smtp(ip)
             # FINGER
         elif port == '79':
             target=mod_finger.handle_finger(ip)
@@ -110,6 +107,9 @@ def main():
             # SMB
         elif (port == '445'):
             mod_smb.handle_smb(ip, port)
+        # SMTP
+        elif port == '25':
+            mod_smtp.handle_smtp(ip)
 
     # UDP
     for port in udp_ports:
