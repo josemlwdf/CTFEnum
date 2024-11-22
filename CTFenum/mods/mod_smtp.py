@@ -13,7 +13,7 @@ def handle_smtp(ip):
                 print_banner('25')
                 print('[!] SMTP')
                 print(f'[!] {cmd}')
-                print(result)
+                print(result.replace('@n@', '\n'))
 
                 log(output, cmd, ip, 'nmap')
     except:
