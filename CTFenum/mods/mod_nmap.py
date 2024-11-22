@@ -35,7 +35,7 @@ def nmap_udp(ip, output_dict):
 
 
 def nmap_tcp(ip, output_dict):
-    cmd = f'nmap -Pn -T3 -n -p- {ip}'
+    cmd = f'nmap -Pn -T4 -n -p- {ip}'
     output = ''
 
     try:
