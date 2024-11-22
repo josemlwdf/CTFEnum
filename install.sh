@@ -5,6 +5,8 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+sudo rm -rf /opt/CTFEnum
+
 sudo apt update
 
 # Check and install seclists
@@ -84,7 +86,7 @@ fi
 # Create ctfenum command
 if [ ! -f "/usr/sbin/ctfenum" ]; then
     echo "Setting up ctfenum command..."
-    echo '#!/bin/bash' | sudo tee /usr/sbin/ctfenum >/dev/null
-    echo 'sudo python3 /opt/CTFEnum/CTFenum/CTFenum.py "$1"' | sudo tee -a /usr/sbin/ctfenum >/dev/null
+    echo '#!/bin/bash' | sudo tee /usr/sbin/ctfenum 2>/dev/null
+    echo 'sudo python3 /opt/CTFEnum/CTFenum/CTFenum.py "$1"' | sudo tee -a /usr/sbin/ctfenum 2>/dev/null
     sudo chmod +x /usr/sbin/ctfenum;
 fi
