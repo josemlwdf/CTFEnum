@@ -84,6 +84,7 @@ fi
 # Create ctfenum command
 if [ ! -f "/usr/sbin/ctfenum" ]; then
     echo "Setting up ctfenum command..."
-    echo 'sudo python3 /opt/CTFEnum/CTFenum/CTFenum.py "$1"' | sudo tee /usr/sbin/ctfenum >/dev/null
+    echo '#!/bin/bash' | sudo tee /usr/sbin/ctfenum >/dev/null
+    echo 'sudo python3 /opt/CTFEnum/CTFenum/CTFenum.py "$1"' | sudo tee -a /usr/sbin/ctfenum >/dev/null
     sudo chmod +x /usr/sbin/ctfenum;
 fi
