@@ -45,7 +45,8 @@ technologies = [
     'X-Cache',                 # Cache status
     'X-Cache-Hits',            # Number of cache hits
     'X-Cache-Lookup',          # Cache lookup status
-    'X-Cache-Status'           # Cache status indicator
+    'X-Cache-Status',          # Cache status indicator
+    'WWW-Authenticate'         # Basic Authentication in place
 ]
 
 # Disable insecure request warnings from urllib3
