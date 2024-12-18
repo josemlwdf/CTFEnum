@@ -116,14 +116,7 @@ def http_identify_server(host, port, proto='http'):
             server_header = response.headers['Server']
             server = server_header
 
-        for technology in technologies:
-            if technology in response.headers:
-                tech.append(response.headers[technology])
-    except Exception as e:
-        printc(f'[-] {e}', RED)
-        return
-
-    if ('Apache' in server_header):
+        if ('Apache' in server_header):
         printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
         extensions.append('html')
         extensions.append('php')
@@ -142,24 +135,35 @@ def http_identify_server(host, port, proto='http'):
             except Exception as e:
                 printc(f'[-] {e}', RED)
                 return
-    elif ('Microsoft-IIS' in server_header):
-        printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
-        extensions.append('asp')
-        extensions.append('php')
-        extensions.append('aspx')
-    elif ('Simple' in server_header) and ('Python' in server_header):
-        printc('[!] Python Development Server, Directory listing should be enabled.', GREEN)
+        elif ('Microsoft-IIS' in server_header):
+            printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
+            extensions.append('asp')
+            extensions.append('php')
+            extensions.append('aspx')
+        elif ('Simple' in server_header) and ('Python' in server_header):
+            printc('[!] Python Development Server, Directory listing should be enabled.', GREEN)
+    
+        else:
+            print('[!] Unknown Server')
+    
+        printc(f'[+] {server_header}', BLUE)
+    except Exception as e:
+        printc(f'[-] {e}', RED)
+        return
 
-    else:
-        print('[!] Unknown Server')
+    try:
+        for technology in technologies:
+            if technology in response.headers:
+                tech.append(response.headers[technology])
 
-    if (server_header != ''): printc(f'[+] {server_header}', BLUE)
-
-    if len(tech) > 0:
-        print('[!] Possible Technologies')
-        for technology in tech:
-            printc(f'[+] {technology}', BLUE)
-        log('\n'.join(tech), '', host)
+        if len(tech) > 0:
+            print('[!] Possible Technologies')
+            for technology in tech:
+                printc(f'[+] {technology}', BLUE)
+            log('\n'.join(tech), '', host)
+    except Exception as e:
+        printc(f'[-] {e}', RED)
+        return
 
 
 def make_request(base_url):
