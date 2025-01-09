@@ -12,6 +12,7 @@ def handle_imap(ip, port):
             print_banner(port)
             print('[!] IMAP ')
             print('[!] https://book.hacktricks.xyz/network-services-pentesting/pentesting-imap')
+            print('[!] If you get creds, use this client to dump the emails: https://github.com/josemlwdf/IMAP-Mail-Dumper')
             print(f'[!] {cmd}')
             printc(output, BLUE)
     except:
