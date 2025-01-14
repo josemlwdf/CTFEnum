@@ -7,6 +7,8 @@ command_exists() {
 
 sudo rm -rf /opt/CTFEnum
 
+sudo pip install colorama --break-system-packages
+
 sudo apt update
 
 # Check and install seclists
