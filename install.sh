@@ -38,7 +38,7 @@ fi
 # Check and install john the ripper
 if ! command_exists john; then
     echo "Installing john..."
-    sudo apt install jhon -y;
+    sudo apt install john -y;
 fi
 
 # Check and install impacket
