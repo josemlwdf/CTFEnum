@@ -1,4 +1,17 @@
 #!/bin/bash
+set -euo pipefail
+
+# Determine which pip to use
+if command -v pip3 &>/dev/null; then
+    PIP_CMD="pip3"
+elif command -v pip &>/dev/null; then
+    PIP_CMD="pip"
+else
+    echo "[!] pip not found, installing python3-pip..."
+    sudo apt update
+    sudo apt install -y python3-pip
+    PIP_CMD="pip3"
+fi
 
 # Function to check if a command exists
 command_exists() {
@@ -7,81 +20,80 @@ command_exists() {
 
 sudo rm -rf /opt/CTFEnum
 
-sudo pip install colorama --break-system-packages
+sudo python3 -m $PIP_CMD install --upgrade colorama
 
 sudo apt update
 
+# Install or fallback via Snap/Git
+install_tool() {
+    local bin="$1" pkg="$2" snap="$3" git_repo="$4" git_dest="$5"
+    if ! command_exists "$bin"; then
+        echo "[*] Installing $bin..."
+        if apt-cache show "$pkg" &>/dev/null; then
+            sudo apt install -y "$pkg"
+        elif command_exists snap && [ -n "$snap" ]; then
+            sudo snap install "$snap"
+        elif [ -n "$git_repo" ]; then
+            sudo git clone "$git_repo" "$git_dest"
+        else
+            echo "[!] No install method for $bin"
+        fi
+    fi
+}
+
 # Check and install seclists
-if ! command_exists seclists; then
-    echo "Installing seclists..."
-    sudo apt install seclists -y;
-fi
-
-# Check and install nmap
-if ! command_exists nmap; then
-    echo "Installing nmap..."
-    sudo apt install nmap -y;
-fi
-
-# Check and install gobuster
-if ! command_exists gobuster; then
-    echo "Installing gobuster..."
-    sudo apt install gobuster -y;
-fi
-
-# Check and install sntp
-if ! command_exists sntp; then
-    echo "Installing sntp..."
-    sudo apt install sntp -y;
-fi
-
-# Check and install john the ripper
-if ! command_exists john; then
-    echo "Installing john..."
-    sudo apt install john -y;
-fi
+install_tool seclists seclists seclists "https://github.com/danielmiessler/SecLists.git" "/opt/SecLists"
+# nmap
+install_tool nmap nmap "" "" ""
+# gobuster
+install_tool gobuster gobuster "" "" ""
+# sntp
+install_tool sntp sntp "" "" ""
+# john
+install_tool john john "" "" ""
 
 # Check and install impacket
 if ! command_exists impacket-GetUserSPNs; then
-    echo "Installing Impacket..."
-    sudo apt install impacket-scripts -y;
+    echo "[*] Installing Impacket..."
+    if apt-cache show impacket-scripts &>/dev/null; then
+        sudo apt install -y impacket-scripts
+    else
+        sudo git clone https://github.com/SecureAuthCorp/impacket.git /opt/impacket
+        sudo $PIP_CMD install /opt/impacket
+    fi
 fi
 
 # Check and install feroxbuster
 if ! command_exists feroxbuster; then
-    echo "Installing feroxbuster..."
-    sudo apt install feroxbuster -y;
+    echo "[*] Installing feroxbuster..."
+    if command_exists snap; then
+        sudo snap install feroxbuster
+    else
+        curl -sL https://github.com/epi052/feroxbuster/releases/latest/download/feroxbuster_amd64.deb.zip -o feroxbuster.deb.zip
+        unzip -o feroxbuster.deb.zip
+        sudo apt install -y ./feroxbuster_*_amd64.deb
+        rm feroxbuster.deb.zip
+    fi
 fi
 
-# Check and install Metasploit
-if ! command_exists msfconsole; then
-    echo "Installing Metasploit..."
-    sudo apt install metasploit-framework -y;
-fi
-
-# Check and install dig (part of dnsutils)
-if ! command_exists dig; then
-    echo "Installing dnsutils (includes dig)..."
-    sudo apt install dnsutils -y;
-fi
-
-# Check and install snmpwalk (part of snmp)
-if ! command_exists snmpwalk; then
-    echo "Installing snmp (includes snmpwalk)..."
-    sudo apt install snmp -y;
-fi
+# metasploit
+install_tool msfconsole metasploit-framework "" "" ""
+# dig (dnsutils)
+install_tool dig dnsutils "" "" ""
+# snmpwalk (snmp)
+install_tool snmpwalk snmp "" "" ""
 
 # Check and install ldapdomaindump
 if ! command_exists ldapdomaindump; then
     echo "Installing ldapdomaindump..."
-    sudo pip3 install ldapdomaindump;
+    sudo $PIP_CMD install ldapdomaindump
 fi
 
 # Clone CTFEnum repository and set up ctfenum command
 if [ ! -d "/opt/CTFEnum" ]; then
     echo "Cloning CTFEnum repository..."
     sudo git clone https://github.com/josemlwdf/CTFEnum /opt/CTFEnum
-    sudo chown -R 1000:1000 /opt/CTFEnum
+    sudo chown -R "$(id -u):$(id -g)" /opt/CTFEnum
     git config --global --add safe.directory /opt/CTFEnum
 fi
 
