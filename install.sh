@@ -58,7 +58,11 @@ if ! command_exists impacket-GetUserSPNs; then
     if apt-cache show impacket-scripts &>/dev/null; then
         sudo apt install -y impacket-scripts
     else
-        sudo git clone https://github.com/SecureAuthCorp/impacket.git /opt/impacket
+        if [ -d "/opt/impacket" ]; then
+            echo "[!] /opt/impacket already exists, skipping clone."
+        else
+            sudo git clone https://github.com/SecureAuthCorp/impacket.git /opt/impacket
+        fi
         sudo $PIP_CMD install /opt/impacket
     fi
 fi
