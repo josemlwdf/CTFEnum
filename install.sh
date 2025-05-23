@@ -20,7 +20,7 @@ command_exists() {
 
 sudo rm -rf /opt/CTFEnum
 
-sudo python3 -m $PIP_CMD install --upgrade colorama
+sudo $PIP_CMD install --upgrade colorama
 
 sudo apt update
 
