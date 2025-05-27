@@ -4,10 +4,8 @@ set -euo pipefail
 # Determine which pip to use
 if command -v pip3 &>/dev/null; then
     PIP_CMD="pip3"
-elif command -v pip &>/dev/null; then
-    PIP_CMD="pip"
 else
-    echo "[!] pip not found, installing python3-pip..."
+    echo "[!] pip3 not found, installing python3-pip..."
     sudo apt update
     sudo apt install -y python3-pip
     PIP_CMD="pip3"
@@ -20,7 +18,15 @@ command_exists() {
 
 sudo rm -rf /opt/CTFEnum
 
-sudo $PIP_CMD install --upgrade colorama
+# Detect WSL
+PIP_EXTRA_ARGS=""
+if grep -qi microsoft /proc/sys/kernel/osrelease; then
+    echo "[*] Detected WSL - adding --break-system-packages to pip install"
+    PIP_EXTRA_ARGS="--break-system-packages"
+fi
+
+sudo $PIP_CMD install --upgrade colorama $PIP_EXTRA_ARGS
+
 
 sudo apt update
 
@@ -42,7 +48,13 @@ install_tool() {
 }
 
 # Check and install seclists
-install_tool seclists seclists seclists "https://github.com/danielmiessler/SecLists.git" "/opt/SecLists"
+if [ ! -d "/usr/share/SecLists" ]; then
+    echo "[*] Cloning SecLists..."
+    sudo git clone https://github.com/danielmiessler/SecLists.git /usr/share/SecLists
+else
+    echo "[*] SecLists already installed at /usr/share/SecLists"
+fi
+
 # nmap
 install_tool nmap nmap "" "" ""
 # gobuster
@@ -61,7 +73,7 @@ if ! command_exists impacket-GetUserSPNs; then
         if [ -d "/opt/impacket" ]; then
             echo "[!] /opt/impacket already exists, skipping clone."
         else
-            sudo git clone https://github.com/SecureAuthCorp/impacket.git /opt/impacket
+            sudo git clone https://github.com/fortra/impacket.git /opt/impacket
         fi
         sudo $PIP_CMD install /opt/impacket
     fi
@@ -70,13 +82,13 @@ fi
 # Check and install feroxbuster
 if ! command_exists feroxbuster; then
     echo "[*] Installing feroxbuster..."
-    if command_exists snap; then
-        sudo snap install feroxbuster
+    if apt-cache show feroxbuster &>/dev/null; then
+        sudo apt install -y feroxbuster
     else
         curl -sL https://github.com/epi052/feroxbuster/releases/latest/download/feroxbuster_amd64.deb.zip -o feroxbuster.deb.zip
         unzip -o feroxbuster.deb.zip
         sudo apt install -y ./feroxbuster_*_amd64.deb
-        rm feroxbuster.deb.zip
+        rm -f feroxbuster.deb.zip feroxbuster_*_amd64.deb
     fi
 fi
 
