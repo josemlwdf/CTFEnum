@@ -61,7 +61,7 @@ install_tool nmap nmap "" "" ""
 # gobuster
 install_tool gobuster gobuster "" "" ""
 # sntp
-install_tool sntp sntp "" "" ""
+install_tool ntpsec-ntpdig ntpsec-ntpdig "" "" ""
 # john
 install_tool john john "" "" ""
 # impacket
