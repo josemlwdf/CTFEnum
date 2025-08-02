@@ -3,7 +3,7 @@
 import multiprocessing
 import sys
 import re
-from mods.mod_utils import *
+from mods.mod_utils import printc, RED, check_version, clean_hosts, print_separator, scan_for_dns, scan_hostname, launch_procs, print_banner
 from mods import mod_nmap
 from mods import mod_ftp
 from mods import mod_telnet
@@ -14,8 +14,10 @@ from mods import mod_finger
 from mods import mod_http
 from mods import mod_kerberos
 from mods import mod_smb
+
 from mods import mod_imap
 from mods import mod_snmp
+from mods import mod_nfs
 
 
 def arg_error():
@@ -64,7 +66,8 @@ def main():
         register_dns = [dns]
         if hostname:
             register_dns += [ hostname, f'{hostname}.{dns}' ]
-        if '.' in dns: register_dns.append(dns.split('.')[0])
+        if '.' in dns:
+            register_dns.append(dns.split('.')[0])
         mod_dns.dns_add_subdomains(ip, register_dns)
 
     # TCP
@@ -79,11 +82,11 @@ def main():
             print('[!] You can try to bruteforce credentials using [netexec|crackmapexec|hydra].')
             print('netexec ssh $(IP) -u usernames.txt -p passwords.txt')
             # TELNET
-        elif port == '23': 
+        elif port == '23':
             mod_telnet.handle_telnet(ip)
             # FINGER
         elif port == '79':
-            target=mod_finger.handle_finger(ip)
+            mod_finger.handle_finger(ip)
             # HTTP
         elif (port == '80') or (port == '443') or (port == '5000') or (port == '8000') or (port == '8080') or (port == '8081') or (port == '8443') or (port == '10443'):
             mod_http.handle_http(ip, port)
@@ -97,10 +100,13 @@ def main():
             print('[!] You can try to bruteforce credentials.')
             print('hydra -l username -P passwords.txt -f $(IP) pop3 -V')
             # RPD BIND
-        elif port == '111':
+        elif port == '111' or port == '2049':
             print_banner(port)
-            print('[!] RPCBind ')
-            print('[!] Reference: https://book.hacktricks.xyz/network-services-pentesting/pentesting-rpcbind')
+            if port == '111':
+                print('[!] RPCBind ')
+                print('[!] Reference: https://book.hacktricks.xyz/network-services-pentesting/pentesting-rpcbind')
+            print('[!] Checking for NFS...')
+            mod_nfs.handle_nfs(ip, port)
             # IMAP
         elif (port == '143') or (port == '993'):
             mod_imap.handle_imap(ip, port)
@@ -120,12 +126,12 @@ def main():
             # SNMP
         if port == '161':
             process = multiprocessing.Process(target=mod_snmp.handle_snmp, args=(ip,))
-            procs.append(process)     
+            procs.append(process)
     # DNS
     if ('53' in tcp_ports) or ('53' in udp_ports):
         process = multiprocessing.Process(target=mod_dns.handle_dns, args=(ip, dns))
         procs.append(process)
-    
+
     procs = launch_procs(procs)
 
 
