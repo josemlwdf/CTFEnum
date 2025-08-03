@@ -1,8 +1,6 @@
 from colorama import init, Fore, Back, Style
 import re
 import requests
-import subprocess
-import sys
 from os import system
 
 # Initialize colorama
@@ -41,7 +39,7 @@ def print_separator():
 
 def print_banner(port):
     print_separator()
-    printc(f'[!] Attacking port {port}', YELLOW)  
+    printc(f'[!] Attacking port {port}', YELLOW)
 
 
 def scan_for_dns(nmap_detail):
@@ -120,7 +118,7 @@ def clean_hosts(ip, subdomain=None):
     for line in line_to_delete:
         try:
             data.remove(line)
-        except:
+        except Exception:
             continue
 
     with open('/etc/hosts', 'w') as file:
@@ -135,18 +133,18 @@ def launch_procs(procs):
             running_procs = []
 
             # Launch subprocesses up to the maximum limit or until the end of the list
-        
+
             for proc in procs[:max_subprocess]:
                 proc.start()
                 running_procs.append(proc)
-        
+
             # Wait for the running subprocesses to finish
             for proc in running_procs:
                 proc.join()
 
             # Remove finished subprocesses from the list
             procs = procs[max_subprocess:]
-        except:
+        except Exception:
             continue
     return []
 
@@ -171,32 +169,33 @@ def check_version():
     printc(banner, GREEN)
 
     current_version = '1.0.0'
-    
+
     with open('/opt/CTFEnum/CTFenum/mods/version', 'r') as file:
         current_version = file.read()
         print('[!] Version: ', end='')
         printc(current_version, GREEN)
         current_version = current_version.replace('.', '')
-    
+
     online_version_url = 'https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/CTFenum/mods/version'
     online_version = current_version
+    response = None
     try:
         response = requests.get(online_version_url)
-    except:
+    except Exception:
         pass
-    if response:
+    if response is not None:
         formatted_online_version = response.text
         online_version = formatted_online_version.replace('.', '')
 
-    if online_version > current_version:
-        printc('[*] A New version of CTF Enum is available.', GREEN)
-        print('[!] GitHub version is: ', end='')
-        printc(formatted_online_version, YELLOW, RED)
-        
-        cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
-        print(f'[!] {cmd}')
-        printc(f'[-] Update as soon as possible.', RED)
-        print_separator()
+        if online_version > current_version:
+            printc('[*] A New version of CTF Enum is available.', GREEN)
+            print('[!] GitHub version is: ', end='')
+            printc(formatted_online_version, YELLOW, RED)
+
+            cmd = 'curl https://raw.githubusercontent.com/josemlwdf/CTFEnum/main/install.sh|bash'
+            print(f'[!] {cmd}')
+            printc('[-] Update as soon as possible.', RED)
+            print_separator()
 
 def log(data, cmd, target='', tool='ctfenum'):
     thislog_path = f'{logs_folder}/{target.replace(".", "-")}'
