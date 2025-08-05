@@ -1,5 +1,5 @@
 import subprocess
-from mods.mod_utils import *
+from mods.mod_utils import print_banner, printc, GREEN, log
 import re
 
 def snmp_get_community(ip):
@@ -10,7 +10,7 @@ def snmp_get_community(ip):
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
-        if output:            
+        if output:
             community_array = re.findall(r'Login Successful: (.*) \(Access?', output)
             if community_array:
                 community = community_array[0]
@@ -21,11 +21,11 @@ def snmp_get_community(ip):
                 print(output)
 
                 log(output, cmd, ip, 'msfconsole')
-    except:
+    except Exception:
         pass
 
     return community
-    
+
 
 def snmp_enum(ip):
     cmd = f"nmap {ip} -sU -T5 -p161 -sV --script='snmp* and not snmp-brute'"
@@ -43,7 +43,7 @@ def snmp_enum(ip):
                 print(result[0].replace('@n@', '\n').replace('\n\n', ''))
 
                 log(output, cmd, ip, 'nmap')
-    except:
+    except Exception:
         return
 
 
@@ -70,13 +70,13 @@ def snmp_get_strings(ip, community):
                     print(output)
 
                     log(output, cmd, ip, 'snmpwalk')
-            except:
+            except Exception:
                 return
-    
+
 
 def handle_snmp(ip):
     #printc('snmp', RED)
-    
+
     community = snmp_get_community(ip)
     snmp_enum(ip)
     snmp_get_strings(ip, community)

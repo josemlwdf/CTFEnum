@@ -1,4 +1,4 @@
-from mods.mod_utils import *
+from mods.mod_utils import print_banner, printc, BLUE
 import subprocess
 
 def handle_imap(ip, port):
@@ -15,5 +15,5 @@ def handle_imap(ip, port):
             print('[!] If you get creds, use this client to dump the emails: https://github.com/josemlwdf/IMAP-Mail-Dumper')
             print(f'[!] {cmd}')
             printc(output, BLUE)
-    except:
+    except Exception:
         return
