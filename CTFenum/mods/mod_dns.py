@@ -1,5 +1,5 @@
 import subprocess
-from mods.mod_utils import *
+from mods.mod_utils import print_banner, print_separator, RED, printc, GREEN, log
 
 
 def dns_print_banner():
@@ -30,7 +30,7 @@ def dns_add_subdomains(ip, subdomains):
         if ip in line:
             line_to_delete.append(line)
             continue
-    
+
     subs_line = []
 
     for line in line_to_delete:
@@ -38,10 +38,10 @@ def dns_add_subdomains(ip, subdomains):
             data.remove(line)
             if len(line) >= 5:
                 subs_line.extend(line.split(' ')[1:])
-        except:
+        except Exception:
             continue
     for subd in subdomains:
-        if not subd in subs_line:
+        if subd not in subs_line:
             subs_line.append(subd)
     subs = " ".join(set(subs_line)).replace('\n', ' ')
     updated_line = f'\n{ip} {subs}\n'
@@ -53,7 +53,7 @@ def dns_add_subdomains(ip, subdomains):
 
 def handle_dns(ip, dns=None):
     #printc('dns', RED)
-    
+
     if not dns:
         dns_print_banner()
         printc('[-] None', RED)
@@ -72,12 +72,12 @@ def handle_dns(ip, dns=None):
                 # Split the output by lines and iterate through each line
                 for line in output.splitlines():
                     # Check if the line contains a subdomain
-                    if dns in line:
+                    if dns is not None and dns in line:
                         parts = line.split()
                         # Extract the subdomain and add it to the set of unique subdomains
                         subdomain = parts[0].rstrip('.')
 
-                        if dns in subdomain:
+                        if dns is not None and dns in subdomain:
                             subdomains.add(subdomain)
 
                 if len(subdomains) > 0:
@@ -89,7 +89,7 @@ def handle_dns(ip, dns=None):
                         printc(data, GREEN)
 
                         log(data, cmd_dns, ip, 'dig')
-                    except:
+                    except Exception:
                         return
-    except:
+    except Exception:
         return

@@ -1,3 +1,4 @@
 *.txt
 mods/__pycache__/
 push
+.venv
