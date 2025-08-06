@@ -1,7 +1,6 @@
 from ftplib import FTP
-from mods.mod_utils import *
+from mods.mod_utils import print_banner, printc, log, BLUE, GREEN, RED, YELLOW, get_usernames_esr
 import multiprocessing
-from time import sleep
 
 
 # List of common FTP users
@@ -20,7 +19,7 @@ def ftp_connect(server, port, username, password):
         # Connect to the FTP server on the specified port
         ftp = FTP()
         ftp.connect(server, int(port))
-        
+
         # Login with username and password
         ftp.login(user=username, passwd=password)
 
@@ -38,10 +37,10 @@ def ftp_connect(server, port, username, password):
 
         # Close the FTP connection
         ftp.quit()
-    except:
+    except Exception:
         pass
     return
-    
+
 
 
 def ftp_brute(ip, port):
@@ -58,14 +57,13 @@ def ftp_brute(ip, port):
             if current_creds in tested_creds:
                 continue
             tested_creds.append(current_creds)
-    max_creds = len(tested_creds)
     for username, password in tested_creds:
         process = multiprocessing.Process(target=ftp_connect, args=(ip, port, username, password))
         process.start()
-    
-    
+
+
 def print_this_banner(port):
-    print_banner(port)  
+    print_banner(port)
     print('[!] FTP')
     print('''[!] If the FTP server does not lists the content, use the commands like:
     ftp:>passive
@@ -74,7 +72,7 @@ def print_this_banner(port):
 
 def handle_ftp(target, port, nmap_detail):
     #printc('ftp', RED)
-    
+
     print_this_banner(port)
     if ('ftp-anon' in nmap_detail):
         printc('[+] Server have anonymous login enabled', GREEN)
@@ -83,7 +81,7 @@ def handle_ftp(target, port, nmap_detail):
             username = 'ftp'
         if '20/tcp   closed ftp-data' in nmap_detail:
             printc('[-] Service is exposed but might be Unavailable', RED)
-        ftp_connect(target, port, username, 'nopass')        
-    else:        
+        ftp_connect(target, port, username, 'nopass')
+    else:
         printc('[!] Testing common credentials for FTP on background', YELLOW)
         ftp_brute(target, port)

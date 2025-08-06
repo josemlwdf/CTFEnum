@@ -1,4 +1,4 @@
-from mods.mod_utils import *
+from mods.mod_utils import print_banner, log, GREEN, RED, printc, launch_procs, max_subprocess
 import multiprocessing
 import socket
 import os
@@ -13,6 +13,7 @@ common_unixnames = ['root','daemon','bin','sys','sync','games','man','lp','mail'
 
 def finger_user(ip, username):
     global founded
+    sock = None
     try:
         # Create a socket object
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,24 +32,25 @@ def finger_user(ip, username):
         username = re.findall(r'Login:(.*)Name:', response)
         if username:
             clean_username = username[0].strip()
-            
+
             try:
                 founded.index(username)
-            except:
+            except Exception:
                 founded.append(clean_username)
-                fullname = ''
+                full_name = ''
                 try:
                     full_name = re.findall(r'Name:(.*)\n', response)
-                except:
+                except Exception:
                     pass
                 finger_banner(clean_username, full_name[0])
 
                 log(username, '', ip, 'finger')
-    except:
+    except Exception:
         pass
     finally:
         # Close the socket connection
-        sock.close()
+        if sock is not None:
+            sock.close()
 
 
 def finger_banner(username, full_name):
@@ -74,7 +76,7 @@ def handle_finger(ip):
         usernames = file.readlines()
 
     count = 0
-    for username in usernames:        
+    for username in usernames:
         # Start processes to execute
         process = multiprocessing.Process(target=finger_user, args=(ip,username))
         procs.append(process)

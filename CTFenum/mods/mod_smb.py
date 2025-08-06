@@ -1,6 +1,6 @@
 import subprocess
 import re
-from mods.mod_utils import *
+from mods.mod_utils import printc, GREEN, RED, BLUE, log, print_banner
 import os
 
 smb_users = ["admin","user","manager","supervisor","administrator","test","operator","backup","lab","demo","smb"]
@@ -14,7 +14,7 @@ def export_wordlists(_smb_users, _smb_paswords):
     with open('smb_users.txt', 'w') as file:
         file.write('\n'.join(_smb_users))
         file.close()
-    
+
     with open('smb_pass.txt', 'w') as file:
         file.write('\n'.join(_smb_paswords))
         file.close()
@@ -88,12 +88,13 @@ def bruteforce(target, port):
                 creds = re.findall(r"Success:\s\'(.*)\'", line)
                 if creds:
                     creds = creds[0].split('\\')[1]
-                    if (creds.split(':')[1] == ''): continue
+                    if (creds.split(':')[1] == ''):
+                        continue
                     printc(f'[+] {creds}', BLUE)
                     credentials.append(creds)
 
             log(output, cmd, target, 'msfconsole')
-            
+
     if credentials:
         export_credentials()
 
@@ -120,7 +121,7 @@ def enumerate_shares(target, user='Guest', passw='', domain='.'):
 
 def handle_smb(target, port):
     #printc('smb', RED)
-    
+
     if not os.path.exists('smb_credentials.txt'):
         # RID CYCLING AS NULL
         rid_cycling(target, user='')
@@ -156,6 +157,6 @@ def handle_smb(target, port):
         os.remove('smb_pass.txt')
         if not credentials:
             os.remove('smb_credentials.txt')
-    except Exception as e:
+    except Exception:
         pass
         #printc(f'[-] {e}', RED)
