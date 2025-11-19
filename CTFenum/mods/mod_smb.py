@@ -97,6 +97,7 @@ def bruteforce(target, port):
 
     if credentials:
         export_credentials()
+    return credentials
 
 
 def enumerate_shares(target, user='Guest', passw='', domain='.'):
