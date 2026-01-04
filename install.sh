@@ -11,13 +11,8 @@ cd /tmp && wget http://http.kali.org/kali/pool/main/k/kali-archive-keyring/kali-
 sudo apt update
 
 # Determine which pip to use
-if which pip3 &>/dev/null; then
-    PIP_CMD="pip3"
-else
-    echo "[!] pip3 not found, installing python3-pip..."
-    sudo apt install -y python3-pip
-    PIP_CMD="pip3"
-fi
+sudo apt install -y python3-pip
+PIP_CMD="pip3"
 
 # Function to check if a command exists
 command_exists() {
@@ -26,14 +21,7 @@ command_exists() {
 
 sudo rm -rf /opt/CTFEnum
 
-# Detect WSL
-PIP_EXTRA_ARGS=""
-if grep -qi microsoft /proc/sys/kernel/osrelease || uname -r | grep -i microsoft; then
-    echo "[*] Detected WSL - adding --break-system-packages to pip install"
-    PIP_EXTRA_ARGS="--break-system-packages"
-fi
-
-sudo $PIP_CMD install --upgrade colorama $PIP_EXTRA_ARGS
+sudo $PIP_CMD install --upgrade colorama --break-system-packages
 
 # Install or fallback via Snap/Git
 install_tool() {
@@ -90,7 +78,7 @@ install_tool snmpwalk snmp "" "" ""
 # Check and install ldapdomaindump
 if ! command_exists ldapdomaindump; then
     echo "Installing ldapdomaindump..."
-    sudo $PIP_CMD install ldapdomaindump
+    sudo $PIP_CMD install ldapdomaindump --break-system-packages
 fi
 
 # Clone CTFEnum repository and set up ctfenum command
